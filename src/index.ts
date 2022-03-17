@@ -1,4 +1,4 @@
-import * as puppeteer from "puppeteer";
+import * as puppeteer from "puppeteer-core";
 import { getFileTypeFromPath, renderSvg, stringifyFunction, writeFileAsync } from "./helpers";
 import { config, defaultOptions, defaultPngShorthandOptions, defaultJpegShorthandOptions, defaultWebpShorthandOptions } from "./constants";
 import { IOptions, IShorthandOptions, IConnectOptions } from "./typings";

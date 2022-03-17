@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connect = exports.from = exports.SvgToImg = exports.Svg = exports.BrowserSource = void 0;
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-core");
 const helpers_1 = require("./helpers");
 const constants_1 = require("./constants");
 class BrowserSource {
