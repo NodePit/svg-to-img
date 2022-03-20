@@ -12,6 +12,7 @@ export class BrowserSource {
   constructor(private readonly factory: () => Promise<puppeteer.Browser>) {}
 
   public async getBrowser(): Promise<puppeteer.Browser> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new Promise((resolve: (result: puppeteer.Browser) => void, reject: (err: any) => void) => {
       /* istanbul ignore if */
       if (this.browserDestructionTimeout) {

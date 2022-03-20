@@ -10,8 +10,8 @@ class BrowserSource {
         this.browserState = "closed";
     }
     async getBrowser() {
-        // eslint-disable-next-line no-async-promise-executor
-        return new Promise(async (resolve, reject) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return new Promise((resolve, reject) => {
             /* istanbul ignore if */
             if (this.browserDestructionTimeout) {
                 clearTimeout(this.browserDestructionTimeout);
@@ -21,15 +21,17 @@ class BrowserSource {
                 // Browser is closed
                 this.queue.push(resolve);
                 this.browserState = "opening";
-                try {
-                    this.browserInstance = await this.factory();
+                this.factory()
+                    .then((browserInstance) => {
+                    this.browserInstance = browserInstance;
                     this.browserState = "open";
-                    return this.executeQueuedRequests(this.browserInstance);
-                }
-                catch (error) {
+                    this.executeQueuedRequests(this.browserInstance);
+                })
+                    .catch((error) => {
                     this.browserState = "closed";
-                    return reject(error);
-                }
+                    reject(error);
+                });
+                return;
             }
             /* istanbul ignore next */
             if (this.browserState === "opening") {

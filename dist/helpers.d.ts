@@ -1,8 +1,8 @@
 /// <reference types="node" />
 import { IBoundingBox } from "./typings";
 export declare const getFileTypeFromPath: (path: string) => string;
-export declare const stringifyFunction: (func: any, ...argsArray: any[]) => string;
-export declare const writeFileAsync: (path: string, data: Buffer) => Promise<{}>;
+export declare const stringifyFunction: (func: Function, ...argsArray: any[]) => string;
+export declare const writeFileAsync: (path: string, data: Buffer) => Promise<void>;
 export declare const renderSvg: (svg: string, options: {
     width?: number | undefined;
     height?: number | undefined;

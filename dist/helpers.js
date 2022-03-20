@@ -4,9 +4,11 @@ const fs = require("fs");
 exports.getFileTypeFromPath = (path) => {
     return path.toLowerCase().replace(new RegExp("jpg", "g"), "jpeg").split(".").reverse()[0];
 };
+// eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
 exports.stringifyFunction = (func, ...argsArray) => {
     // Remove istanbul coverage instruments
     const functionString = func.toString().replace(/cov_(.+?)\+\+[,;]?/g, "");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const args = [];
     for (const argument of argsArray) {
         switch (typeof argument) {
