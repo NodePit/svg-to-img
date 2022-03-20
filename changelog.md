@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * Set up GitHub CI
 * Upgrade development dependencies (Typescript, ESLint, etc.) and related fixes
-* (breaking) Depend on [`puppeteer-core`](https://github.com/puppeteer/puppeteer#puppeteer-core) to avoid Chromium download
+* (breaking) Depend on [`puppeteer-core`](https://github.com/puppeteer/puppeteer#puppeteer-core) to avoid Chromium download. If you rely on the included Chromium, simply add a dependency to `puppeteer@2.0.0` to your project
 
 ## [2.2.0] – 2020-12-14
 ### Added
