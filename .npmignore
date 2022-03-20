@@ -1,7 +1,8 @@
 src/
 .idea
 tsconfig.json
-tslint.json
 coverage
 .circleci
 dist/typings/index.js
+.eslintrc.js
+.prettierrc.js

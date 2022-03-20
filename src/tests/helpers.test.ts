@@ -18,7 +18,7 @@ describe("Helper functions", () => {
   });
 
   test("Stringify function", async () => {
-    const func = stringifyFunction((str: string, obj: object, num: number) => str + obj + num, "a", {a: 1}, 1);
+    const func = stringifyFunction((str: string, obj: object, num: number) => str + obj + num, "a", { a: 1 }, 1);
 
     expect(func).toEqual(`((str, obj, num) => str + obj + num)(\`a\`,{"a":1},1)`);
   });

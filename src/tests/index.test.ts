@@ -277,7 +277,7 @@ describe("SVG to image conversion", () => {
   });
 
   test("Propagates error when cannot connect", async (done) => {
-    const convert = svgToImg.connect({ browserWSEndpoint: "ws://localhost:12345" })
+    const convert = svgToImg.connect({ browserWSEndpoint: "ws://localhost:12345" });
     try {
       await convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
       done.fail();

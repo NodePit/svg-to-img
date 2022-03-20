@@ -8,7 +8,7 @@ export const getFileTypeFromPath = (path: string) => {
 export const stringifyFunction = (func: any, ...argsArray: any[]) => {
   // Remove istanbul coverage instruments
   const functionString = func.toString().replace(/cov_(.+?)\+\+[,;]?/g, "");
-  const args: Array<string|object|number> = [];
+  const args: Array<string | object | number> = [];
 
   for (const argument of argsArray) {
     switch (typeof argument) {
@@ -29,22 +29,27 @@ export const stringifyFunction = (func: any, ...argsArray: any[]) => {
 export const writeFileAsync = async (path: string, data: Buffer) => {
   return new Promise((resolve, reject) => {
     fs.writeFile(path, data, (err: NodeJS.ErrnoException | null) => {
-      if (err) { return reject(err); }
+      if (err) {
+        return reject(err);
+      }
 
       resolve();
     });
   });
 };
 
-export const renderSvg = async (svg: string, options: {
-  width?: IOptions["width"];
-  height?: IOptions["height"];
-  type: IOptions["type"];
-  quality: IOptions["quality"];
-  background?: IOptions["background"];
-  clip?: IBoundingBox;
-  jpegBackground: string;
-}) => {
+export const renderSvg = async (
+  svg: string,
+  options: {
+    width?: IOptions["width"];
+    height?: IOptions["height"];
+    type: IOptions["type"];
+    quality: IOptions["quality"];
+    background?: IOptions["background"];
+    clip?: IBoundingBox;
+    jpegBackground: string;
+  }
+) => {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
