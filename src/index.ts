@@ -12,8 +12,7 @@ export class BrowserSource {
   constructor(private readonly factory: () => Promise<puppeteer.Browser>) {}
 
   public async getBrowser(): Promise<puppeteer.Browser> {
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve: (result: puppeteer.Browser) => void, reject: (err: any) => void) => {
+    return new Promise((resolve: (result: puppeteer.Browser) => void, reject: (err: any) => void) => {
       /* istanbul ignore if */
       if (this.browserDestructionTimeout) {
         clearTimeout(this.browserDestructionTimeout);
@@ -24,16 +23,19 @@ export class BrowserSource {
         // Browser is closed
         this.queue.push(resolve);
         this.browserState = "opening";
-        try {
-          this.browserInstance = await this.factory();
-          this.browserState = "open";
+        this.factory()
+          .then((browserInstance) => {
+            this.browserInstance = browserInstance;
+            this.browserState = "open";
 
-          return this.executeQueuedRequests(this.browserInstance);
-        } catch (error) {
-          this.browserState = "closed";
+            this.executeQueuedRequests(this.browserInstance);
+          })
+          .catch((error) => {
+            this.browserState = "closed";
+            reject(error);
+          });
 
-          return reject(error);
-        }
+        return;
       }
 
       /* istanbul ignore next */
