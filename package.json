@@ -101,7 +101,7 @@
     "husky": "0.15.0-rc.13",
     "image-size": "0.6.3",
     "jest": "27.5.1",
-    "jest-canvas-mock": "1.1.0",
+    "jest-canvas-mock": "2.3.1",
     "prettier": "2.6.0",
     "rimraf": "2.6.2",
     "ts-jest": "27.1.4",
