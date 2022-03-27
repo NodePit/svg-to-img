@@ -27,6 +27,6 @@ export declare class SvgToImg {
     constructor(browserSource: BrowserSource);
     from(svg: Buffer | string): Svg;
 }
-export declare const from: (svg: string | Buffer) => Svg;
+export declare const from: (svg: Buffer | string) => Svg;
 export declare const connect: (options: IConnectOptions) => SvgToImg;
 export { IOptions, IShorthandOptions, IConnectOptions };
