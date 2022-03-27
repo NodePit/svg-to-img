@@ -89,7 +89,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/image-size": "0.0.29",
-    "@types/jest": "22.2.3",
+    "@types/jest": "27.4.1",
     "@types/puppeteer": "1.10.1",
     "@types/rimraf": "2.0.2",
     "@typescript-eslint/eslint-plugin": "^5.15.0",
@@ -99,12 +99,12 @@
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "0.15.0-rc.13",
     "image-size": "0.6.3",
-    "jest": "22.4.4",
+    "jest": "27.5.1",
     "jest-canvas-mock": "1.1.0",
     "prettier": "2.6.0",
     "rimraf": "2.6.2",
-    "ts-jest": "22.4.6",
-    "typescript": "2.9.2"
+    "ts-jest": "27.1.4",
+    "typescript": "4.6.3"
   },
   "dependencies": {
     "puppeteer": "2.0.0"
