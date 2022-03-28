@@ -6,11 +6,10 @@ const getFileTypeFromPath = (path) => {
     return path.toLowerCase().replace(new RegExp("jpg", "g"), "jpeg").split(".").reverse()[0];
 };
 exports.getFileTypeFromPath = getFileTypeFromPath;
-// eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/ban-types
 const stringifyFunction = (func, ...argsArray) => {
     // Remove istanbul coverage instruments
     const functionString = func.toString().replace(/cov_(.+?)\+\+[,;]?/g, "");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const args = [];
     for (const argument of argsArray) {
         switch (typeof argument) {

@@ -11,7 +11,6 @@ class BrowserSource {
         this.browserState = "closed";
     }
     async getBrowser() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return new Promise((resolve, reject) => {
             /* istanbul ignore if */
             if (this.browserDestructionTimeout) {
