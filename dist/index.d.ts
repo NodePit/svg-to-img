@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import * as puppeteer from "puppeteer";
+import * as puppeteer from "puppeteer-core";
 import { IOptions, IShorthandOptions, IConnectOptions } from "./typings";
 export declare class BrowserSource {
     private readonly factory;

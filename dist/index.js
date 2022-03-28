@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connect = exports.from = exports.SvgToImg = exports.Svg = exports.BrowserSource = void 0;
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-core");
 const helpers_1 = require("./helpers");
 const constants_1 = require("./constants");
 class BrowserSource {
@@ -133,7 +133,19 @@ class SvgToImg {
     }
 }
 exports.SvgToImg = SvgToImg;
-const defaultBrowserSource = new BrowserSource(async () => puppeteer.launch(constants_1.config.puppeteer));
+const defaultBrowserSource = new BrowserSource(async () => {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const puppeteerFull = require("puppeteer");
+        return puppeteerFull.launch(constants_1.config.puppeteer);
+    }
+    catch (err) {
+        /* istanbul ignore next */
+        throw new Error("NPM module `puppeteer` is not available. Either add it as " +
+            " dependency to your project, or use the `connect` function and supply " +
+            "`browserWSEndpoint` if you want to use a running Puppeteer endpoint.");
+    }
+});
 const from = (svg) => {
     return new SvgToImg(defaultBrowserSource).from(svg);
 };
