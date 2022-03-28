@@ -59,7 +59,7 @@ export class BrowserSource {
     if (this.browserDestructionTimeout) {
       clearTimeout(this.browserDestructionTimeout);
     }
-    this.browserDestructionTimeout = setTimeout(async () => {
+    this.browserDestructionTimeout = global.setTimeout(async () => {
       /* istanbul ignore next */
       if (this.browserInstance) {
         this.browserState = "closed";
