@@ -9,10 +9,10 @@ export class BrowserSource {
   private browserInstance: puppeteer.Browser | undefined;
   private browserState: "closed" | "opening" | "open" = "closed";
 
-  constructor (private readonly factory: () => Promise<puppeteer.Browser>) {}
+  constructor(private readonly factory: () => Promise<puppeteer.Browser>) {}
 
-  public async getBrowser (): Promise<puppeteer.Browser> {
-    return new Promise(async (resolve: (result: puppeteer.Browser) => void, reject: (err: any) => void) => {
+  public async getBrowser(): Promise<puppeteer.Browser> {
+    return new Promise((resolve: (result: puppeteer.Browser) => void, reject: (err: unknown) => void) => {
       /* istanbul ignore if */
       if (this.browserDestructionTimeout) {
         clearTimeout(this.browserDestructionTimeout);
@@ -23,16 +23,19 @@ export class BrowserSource {
         // Browser is closed
         this.queue.push(resolve);
         this.browserState = "opening";
-        try {
-          this.browserInstance = await this.factory();
-          this.browserState = "open";
+        this.factory()
+          .then((browserInstance) => {
+            this.browserInstance = browserInstance;
+            this.browserState = "open";
 
-          return this.executeQueuedRequests(this.browserInstance);
-        } catch (error) {
-          this.browserState = "closed";
+            this.executeQueuedRequests(this.browserInstance);
+          })
+          .catch((error) => {
+            this.browserState = "closed";
+            reject(error);
+          });
 
-          return reject(error);
-        }
+        return;
       }
 
       /* istanbul ignore next */
@@ -49,54 +52,53 @@ export class BrowserSource {
         }
       }
     });
-  };
+  }
 
-  public scheduleBrowserForDestruction () {
+  public scheduleBrowserForDestruction() {
     /* istanbul ignore if */
     if (this.browserDestructionTimeout) {
       clearTimeout(this.browserDestructionTimeout);
     }
-    this.browserDestructionTimeout = setTimeout(async () => {
+    this.browserDestructionTimeout = global.setTimeout(async () => {
       /* istanbul ignore next */
       if (this.browserInstance) {
         this.browserState = "closed";
         await this.browserInstance.close();
       }
     }, 500);
-  };
+  }
 
-  private executeQueuedRequests (browser: puppeteer.Browser) {
+  private executeQueuedRequests(browser: puppeteer.Browser) {
     for (const resolve of this.queue) {
       resolve(browser);
     }
     // Clear items from the queue
     this.queue.length = 0;
-  };
-};
+  }
+}
 
 export class Svg {
+  constructor(private readonly svg: Buffer | string, private browserSource: BrowserSource) {}
 
-  constructor (private readonly svg: Buffer|string, private browserSource: BrowserSource) {}
-
-  public async to (options: IOptions): Promise<Buffer|string> {
+  public async to(options: IOptions): Promise<Buffer | string> {
     return this.convertSvg(this.svg, options, this.browserSource);
-  };
+  }
 
-  public async toPng (options?: IShorthandOptions): Promise<Buffer|string> {
-    return this.convertSvg(this.svg, {...defaultPngShorthandOptions, ...options}, this.browserSource);
-  };
+  public async toPng(options?: IShorthandOptions): Promise<Buffer | string> {
+    return this.convertSvg(this.svg, { ...defaultPngShorthandOptions, ...options }, this.browserSource);
+  }
 
-  public async toJpeg (options?: IShorthandOptions): Promise<Buffer|string> {
-    return this.convertSvg(this.svg, {...defaultJpegShorthandOptions, ...options}, this.browserSource);
-  };
+  public async toJpeg(options?: IShorthandOptions): Promise<Buffer | string> {
+    return this.convertSvg(this.svg, { ...defaultJpegShorthandOptions, ...options }, this.browserSource);
+  }
 
-  public async toWebp (options?: IShorthandOptions): Promise<Buffer|string> {
-    return this.convertSvg(this.svg, {...defaultWebpShorthandOptions, ...options}, this.browserSource);
-  };
+  public async toWebp(options?: IShorthandOptions): Promise<Buffer | string> {
+    return this.convertSvg(this.svg, { ...defaultWebpShorthandOptions, ...options }, this.browserSource);
+  }
 
-  private async convertSvg (inputSvg: Buffer|string, passedOptions: IOptions, browserSource: BrowserSource): Promise<Buffer|string> {
+  private async convertSvg(inputSvg: Buffer | string, passedOptions: IOptions, browserSource: BrowserSource): Promise<Buffer | string> {
     const svg = Buffer.isBuffer(inputSvg) ? (inputSvg as Buffer).toString("utf8") : inputSvg;
-    const options = {...defaultOptions, ...passedOptions};
+    const options = { ...defaultOptions, ...passedOptions };
     const browser = await browserSource.getBrowser();
     const page = (await browser.pages())[0];
 
@@ -112,15 +114,17 @@ export class Svg {
       }
     }
 
-    const base64 = await page.evaluate(stringifyFunction(renderSvg, svg, {
-      width: options.width,
-      height: options.height,
-      type: options.type,
-      quality: options.quality,
-      background: options.background,
-      clip: options.clip,
-      jpegBackground: config.jpegBackground
-    }));
+    const base64 = await page.evaluate(
+      stringifyFunction(renderSvg, svg, {
+        width: options.width,
+        height: options.height,
+        type: options.type,
+        quality: options.quality,
+        background: options.background,
+        clip: options.clip,
+        jpegBackground: config.jpegBackground
+      })
+    );
 
     browserSource.scheduleBrowserForDestruction();
 
@@ -139,25 +143,25 @@ export class Svg {
     }
 
     return buffer.toString(options.encoding);
-  };
+  }
 }
 
 export class SvgToImg {
-  constructor (private readonly browserSource: BrowserSource) {}
-  public from (svg: Buffer|string) {
+  constructor(private readonly browserSource: BrowserSource) {}
+  public from(svg: Buffer | string) {
     return new Svg(svg, this.browserSource);
-  };
+  }
 }
 
 const defaultBrowserSource = new BrowserSource(async () => puppeteer.launch(config.puppeteer));
 
-export const from = (svg: Buffer|string) => {
+export const from = (svg: Buffer | string) => {
   return new SvgToImg(defaultBrowserSource).from(svg);
-}
+};
 
 /* istanbul ignore next */
 export const connect = (options: IConnectOptions) => {
   return new SvgToImg(new BrowserSource(async () => puppeteer.connect(options)));
-}
+};
 
 export { IOptions, IShorthandOptions, IConnectOptions };

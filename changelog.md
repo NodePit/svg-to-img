@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## unreleased
 ### Changed
 * Set up GitHub CI
+* Upgrade development dependencies (Typescript, ESLint, etc.) and related fixes
 
 ## [2.2.0] – 2020-12-14
 ### Added

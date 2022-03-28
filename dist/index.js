@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.connect = exports.from = exports.SvgToImg = exports.Svg = exports.BrowserSource = void 0;
 const puppeteer = require("puppeteer");
 const helpers_1 = require("./helpers");
 const constants_1 = require("./constants");
@@ -10,7 +11,7 @@ class BrowserSource {
         this.browserState = "closed";
     }
     async getBrowser() {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             /* istanbul ignore if */
             if (this.browserDestructionTimeout) {
                 clearTimeout(this.browserDestructionTimeout);
@@ -20,15 +21,17 @@ class BrowserSource {
                 // Browser is closed
                 this.queue.push(resolve);
                 this.browserState = "opening";
-                try {
-                    this.browserInstance = await this.factory();
+                this.factory()
+                    .then((browserInstance) => {
+                    this.browserInstance = browserInstance;
                     this.browserState = "open";
-                    return this.executeQueuedRequests(this.browserInstance);
-                }
-                catch (error) {
+                    this.executeQueuedRequests(this.browserInstance);
+                })
+                    .catch((error) => {
                     this.browserState = "closed";
-                    return reject(error);
-                }
+                    reject(error);
+                });
+                return;
             }
             /* istanbul ignore next */
             if (this.browserState === "opening") {
@@ -44,13 +47,12 @@ class BrowserSource {
             }
         });
     }
-    ;
     scheduleBrowserForDestruction() {
         /* istanbul ignore if */
         if (this.browserDestructionTimeout) {
             clearTimeout(this.browserDestructionTimeout);
         }
-        this.browserDestructionTimeout = setTimeout(async () => {
+        this.browserDestructionTimeout = global.setTimeout(async () => {
             /* istanbul ignore next */
             if (this.browserInstance) {
                 this.browserState = "closed";
@@ -58,7 +60,6 @@ class BrowserSource {
             }
         }, 500);
     }
-    ;
     executeQueuedRequests(browser) {
         for (const resolve of this.queue) {
             resolve(browser);
@@ -66,10 +67,8 @@ class BrowserSource {
         // Clear items from the queue
         this.queue.length = 0;
     }
-    ;
 }
 exports.BrowserSource = BrowserSource;
-;
 class Svg {
     constructor(svg, browserSource) {
         this.svg = svg;
@@ -78,34 +77,30 @@ class Svg {
     async to(options) {
         return this.convertSvg(this.svg, options, this.browserSource);
     }
-    ;
     async toPng(options) {
-        return this.convertSvg(this.svg, Object.assign({}, constants_1.defaultPngShorthandOptions, options), this.browserSource);
+        return this.convertSvg(this.svg, Object.assign(Object.assign({}, constants_1.defaultPngShorthandOptions), options), this.browserSource);
     }
-    ;
     async toJpeg(options) {
-        return this.convertSvg(this.svg, Object.assign({}, constants_1.defaultJpegShorthandOptions, options), this.browserSource);
+        return this.convertSvg(this.svg, Object.assign(Object.assign({}, constants_1.defaultJpegShorthandOptions), options), this.browserSource);
     }
-    ;
     async toWebp(options) {
-        return this.convertSvg(this.svg, Object.assign({}, constants_1.defaultWebpShorthandOptions, options), this.browserSource);
+        return this.convertSvg(this.svg, Object.assign(Object.assign({}, constants_1.defaultWebpShorthandOptions), options), this.browserSource);
     }
-    ;
     async convertSvg(inputSvg, passedOptions, browserSource) {
         const svg = Buffer.isBuffer(inputSvg) ? inputSvg.toString("utf8") : inputSvg;
-        const options = Object.assign({}, constants_1.defaultOptions, passedOptions);
+        const options = Object.assign(Object.assign({}, constants_1.defaultOptions), passedOptions);
         const browser = await browserSource.getBrowser();
         const page = (await browser.pages())[0];
         // ⚠️ Offline mode is enabled to prevent any HTTP requests over the network
         await page.setOfflineMode(true);
         // Infer the file type from the file path if no type is provided
         if (!passedOptions.type && options.path) {
-            const fileType = helpers_1.getFileTypeFromPath(options.path);
+            const fileType = (0, helpers_1.getFileTypeFromPath)(options.path);
             if (constants_1.config.supportedImageTypes.includes(fileType)) {
                 options.type = fileType;
             }
         }
-        const base64 = await page.evaluate(helpers_1.stringifyFunction(helpers_1.renderSvg, svg, {
+        const base64 = await page.evaluate((0, helpers_1.stringifyFunction)(helpers_1.renderSvg, svg, {
             width: options.width,
             height: options.height,
             type: options.type,
@@ -117,7 +112,7 @@ class Svg {
         browserSource.scheduleBrowserForDestruction();
         const buffer = Buffer.from(base64, "base64");
         if (options.path) {
-            await helpers_1.writeFileAsync(options.path, buffer);
+            await (0, helpers_1.writeFileAsync)(options.path, buffer);
         }
         if (options.encoding === "base64") {
             return base64;
@@ -127,7 +122,6 @@ class Svg {
         }
         return buffer.toString(options.encoding);
     }
-    ;
 }
 exports.Svg = Svg;
 class SvgToImg {
@@ -137,14 +131,15 @@ class SvgToImg {
     from(svg) {
         return new Svg(svg, this.browserSource);
     }
-    ;
 }
 exports.SvgToImg = SvgToImg;
 const defaultBrowserSource = new BrowserSource(async () => puppeteer.launch(constants_1.config.puppeteer));
-exports.from = (svg) => {
+const from = (svg) => {
     return new SvgToImg(defaultBrowserSource).from(svg);
 };
+exports.from = from;
 /* istanbul ignore next */
-exports.connect = (options) => {
+const connect = (options) => {
     return new SvgToImg(new BrowserSource(async () => puppeteer.connect(options)));
 };
+exports.connect = connect;

@@ -156,7 +156,7 @@ describe("SVG to image conversion", () => {
         type: "png"
       });
     } catch (error) {
-      expect(error.message).toContain("Error: Malformed SVG");
+      expect((error as Error).message).toContain("Error: Malformed SVG");
     }
   });
 
@@ -250,15 +250,13 @@ describe("SVG to image conversion", () => {
     expect(md5(data)).toEqual("29f7cd260d1ceaa8aef7964e5f2f7ae0");
   });
 
-  test("Wait for browser destruction", async (done) => {
+  test("Wait for browser destruction", async () => {
     await svgToImg.from(responsiveSvgBuffer).toJpeg();
 
-    setTimeout(async () => {
-      done();
-    }, 2000);
+    return new Promise<void>((resolve) => setTimeout(() => resolve(), 2000));
   });
 
-  test("Test multiple requests in parallel", async (done) => {
+  test("Test multiple requests in parallel", async () => {
     let errors = 0;
 
     for (let i = 0; i < 10; i++) {
@@ -270,45 +268,40 @@ describe("SVG to image conversion", () => {
       }
     }
 
-    setTimeout(() => {
-      expect(errors).toBe(0);
-      done();
-    }, 1000);
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
+    expect(errors).toBe(0);
   });
 
-  test("Propagates error when cannot connect", async (done) => {
-    const convert = svgToImg.connect({ browserWSEndpoint: "ws://localhost:12345" })
+  test("Propagates error when cannot connect", async () => {
+    const convert = svgToImg.connect({ browserWSEndpoint: "ws://localhost:12345" });
     try {
       await convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
-      done.fail();
+      fail();
     } catch (error) {
-      expect(error.message).toContain("ECONNREFUSED");
-      done();
+      expect((error as Error).message).toContain("ECONNREFUSED");
     }
   });
 
-  test("Propagates error when cannot connect with subsequent attempts", async (done) => {
+  test("Propagates error when cannot connect with subsequent attempts", async () => {
     const convert = svgToImg.connect({ browserWSEndpoint: "ws://localhost:12345" });
     let errors = 0;
     for (let i = 0; i < 10; i++) {
       try {
         await convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
-        done.fail();
+        fail();
       } catch (error) {
-        expect(error.message).toContain("ECONNREFUSED");
+        expect((error as Error).message).toContain("ECONNREFUSED");
         errors++;
       }
     }
     expect(errors).toBe(10);
-    done();
   });
 
-  test("Special character encoding", async (done) => {
+  test("Special character encoding", async () => {
     try {
       await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'><text x='0' y='0'>äöüÄÖÜçéèñ</text></svg>").toPng();
-      done();
     } catch (error) {
-      done.fail();
+      fail();
     }
   });
 });

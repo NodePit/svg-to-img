@@ -1,9 +1,13 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import { getFileTypeFromPath, stringifyFunction, renderSvg, writeFileAsync } from "../helpers";
 import { config } from "../constants";
 
 beforeEach(() => {
   // Mock img.addEventListener("load|error", () => {});
-  Element.prototype.addEventListener = jest.fn((event, callback) => {
+  Element.prototype.addEventListener = jest.fn((event, callback: EventListener) => {
     if (event === "load") {
       setTimeout(callback, 10);
     }
@@ -18,7 +22,7 @@ describe("Helper functions", () => {
   });
 
   test("Stringify function", async () => {
-    const func = stringifyFunction((str: string, obj: object, num: number) => str + obj + num, "a", {a: 1}, 1);
+    const func = stringifyFunction((str: string, obj: object, num: number) => str + obj + num, "a", { a: 1 }, 1);
 
     expect(func).toEqual(`((str, obj, num) => str + obj + num)(\`a\`,{"a":1},1)`);
   });
@@ -33,7 +37,8 @@ describe("Helper functions", () => {
       jpegBackground: config.jpegBackground
     });
 
-    expect(base64).toBe("");
+    // https://github.com/hustcc/jest-canvas-mock/blob/315d56b2dacf292f27fe84b690620957ddeadbdd/src/mock/prototype.js#L103
+    expect(base64).toBe("00");
   });
 
   test("Render SVG with default options", async () => {
@@ -43,7 +48,7 @@ describe("Helper functions", () => {
       jpegBackground: config.jpegBackground
     });
 
-    expect(base64).toBe("");
+    expect(base64).toBe("00");
   });
 
   test("Render SVG with clipping options", async () => {
@@ -59,11 +64,11 @@ describe("Helper functions", () => {
       jpegBackground: config.jpegBackground
     });
 
-    expect(base64).toBe("");
+    expect(base64).toBe("00");
   });
 
   test("Malformed SVG", async () => {
-    Element.prototype.addEventListener = jest.fn((event, callback) => {
+    Element.prototype.addEventListener = jest.fn((event, callback: EventListener) => {
       if (event === "error") {
         setTimeout(callback, 10);
       }
@@ -76,7 +81,7 @@ describe("Helper functions", () => {
         jpegBackground: config.jpegBackground
       });
     } catch (error) {
-      expect(error.message).toContain("Malformed SVG");
+      expect((error as Error).message).toContain("Malformed SVG");
     }
   });
 
