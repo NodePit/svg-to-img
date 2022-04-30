@@ -78,17 +78,17 @@ class Svg {
         return this.convertSvg(this.svg, options, this.browserSource);
     }
     async toPng(options) {
-        return this.convertSvg(this.svg, Object.assign(Object.assign({}, constants_1.defaultPngShorthandOptions), options), this.browserSource);
+        return this.convertSvg(this.svg, { ...constants_1.defaultPngShorthandOptions, ...options }, this.browserSource);
     }
     async toJpeg(options) {
-        return this.convertSvg(this.svg, Object.assign(Object.assign({}, constants_1.defaultJpegShorthandOptions), options), this.browserSource);
+        return this.convertSvg(this.svg, { ...constants_1.defaultJpegShorthandOptions, ...options }, this.browserSource);
     }
     async toWebp(options) {
-        return this.convertSvg(this.svg, Object.assign(Object.assign({}, constants_1.defaultWebpShorthandOptions), options), this.browserSource);
+        return this.convertSvg(this.svg, { ...constants_1.defaultWebpShorthandOptions, ...options }, this.browserSource);
     }
     async convertSvg(inputSvg, passedOptions, browserSource) {
         const svg = Buffer.isBuffer(inputSvg) ? inputSvg.toString("utf8") : inputSvg;
-        const options = Object.assign(Object.assign({}, constants_1.defaultOptions), passedOptions);
+        const options = { ...constants_1.defaultOptions, ...passedOptions };
         const browser = await browserSource.getBrowser();
         const page = (await browser.pages())[0];
         // ⚠️ Offline mode is enabled to prevent any HTTP requests over the network

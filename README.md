@@ -21,7 +21,7 @@ To use svg-to-img in your project, run:
 npm install @nodepit/svg-to-img -S
 ```
 
-Note: When you install svg-to-img, it downloads a recent version of Chromium (~170Mb Mac, ~282Mb Linux, ~280Mb Win) that is guaranteed to work with the library. If you want to skip downloading Chromium and instead [connect to a browser websocket endpoint](#svgtoimgconnectoptions), set the [`PUPPETEER_SKIP_CHROMIUM_DOWNLOAD`](https://github.com/puppeteer/puppeteer/blob/v2.0.0/docs/api.md#environment-variables) environment variable.
+Starting from v3.0.0, Chromium will **no longer** automatically be downloaded when installing this dependency (instead of depending on `puppetteer`, the library now depends on `puppeteer-core`; see [here](https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#puppeteer-vs-puppeteer-core)). We assume that you either have an existing local or remote Chromium, or that you explicitly install `puppeteer` within your project to to have Chromium downloaded.
 
 #### Debian
 
@@ -39,8 +39,6 @@ apt-get install -yq gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups
 ```
 
 ### Usage
-
-Caution: svg-to-img uses async/await which is only supported in Node v7.6.0 or greater.
 
 **Example** - converting a `svg` to `png`:
 
