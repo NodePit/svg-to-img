@@ -6,3 +6,5 @@ coverage
 dist/typings/index.js
 .eslintrc.js
 .prettierrc.js
+.github
+.husky
