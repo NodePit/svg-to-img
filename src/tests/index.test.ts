@@ -20,7 +20,6 @@ describe("SVG to image conversion", () => {
       type: "jpeg"
     });
 
-    fs.writeFileSync("image1.jpg", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "jpg",
       width: 406,
@@ -34,7 +33,6 @@ describe("SVG to image conversion", () => {
       type: "png"
     });
 
-    fs.writeFileSync("image2.png", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "png",
       width: 406,
@@ -78,7 +76,6 @@ describe("SVG to image conversion", () => {
       encoding: "base64"
     });
 
-    fs.writeFileSync("image3.png", data);
     expect(sizeOf(Buffer.from(data as string, "base64"))).toEqual({
       type: "png",
       width: 406,
@@ -92,7 +89,6 @@ describe("SVG to image conversion", () => {
       encoding: "hex"
     });
 
-    fs.writeFileSync("image4.png", data);
     expect(sizeOf(Buffer.from(data as string, "hex"))).toEqual({
       type: "png",
       width: 406,
@@ -106,7 +102,6 @@ describe("SVG to image conversion", () => {
       quality: 0
     });
 
-    fs.writeFileSync("image5.jpg", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "jpg",
       width: 406,
@@ -120,7 +115,6 @@ describe("SVG to image conversion", () => {
       quality: 0
     });
 
-    fs.writeFileSync("image6.webp", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "webp",
       width: 406,
@@ -135,7 +129,6 @@ describe("SVG to image conversion", () => {
       height: 200
     });
 
-    fs.writeFileSync("image7.png", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "png",
       width: 1000,
@@ -149,7 +142,6 @@ describe("SVG to image conversion", () => {
       background: "#09f"
     });
 
-    fs.writeFileSync("image8.png", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "png",
       width: 406,
@@ -171,7 +163,6 @@ describe("SVG to image conversion", () => {
   test("Responsive SVG (Infer natural dimensions)", async () => {
     const data = await svgToImg.from(responsiveSvgBuffer).toPng();
 
-    fs.writeFileSync("image9.png", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "png",
       width: 187,
@@ -186,7 +177,6 @@ describe("SVG to image conversion", () => {
       height: 100
     });
 
-    fs.writeFileSync("image10.png", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "png",
       width: 300,
@@ -200,7 +190,6 @@ describe("SVG to image conversion", () => {
       width: 300
     });
 
-    fs.writeFileSync("image11.png", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "png",
       width: 300,
@@ -212,7 +201,6 @@ describe("SVG to image conversion", () => {
   test("SVG to PNG shorthand", async () => {
     const data = await svgToImg.from(responsiveSvgBuffer).toPng();
 
-    fs.writeFileSync("image12.png", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "png",
       width: 187,
@@ -224,7 +212,6 @@ describe("SVG to image conversion", () => {
   test("SVG to JPEG shorthand", async () => {
     const data = await svgToImg.from(responsiveSvgBuffer).toJpeg();
 
-    fs.writeFileSync("image13.jpg", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "jpg",
       width: 187,
@@ -237,7 +224,6 @@ describe("SVG to image conversion", () => {
   test("SVG to WEBP shorthand", async () => {
     const data = await svgToImg.from(responsiveSvgBuffer).toWebp();
 
-    fs.writeFileSync("image14.webp", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "webp",
       width: 187,
@@ -256,7 +242,6 @@ describe("SVG to image conversion", () => {
       }
     });
 
-    fs.writeFileSync("image15.png", data);
     expect(sizeOf(data as Buffer)).toEqual({
       type: "png",
       width: 100,
