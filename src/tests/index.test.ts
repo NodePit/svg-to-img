@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as svgToImg from "../index";
 import { md5 } from "./helpers";
 import * as rimraf from "rimraf";
-import * as sizeOf from "image-size";
+import { imageSize as sizeOf } from "image-size";
 
 const inputDir = "./src/tests/svg";
 const outputDir = "./src/tests/img";
