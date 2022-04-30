@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2017",
+    "target": "es2018",
     "strict": true,
     "declaration": true,
     "noImplicitAny": true,
     "outDir": "./dist",
     "lib": [
       "dom",
-      "es2017"
+      "es2018"
     ]
   },
   "include": [
