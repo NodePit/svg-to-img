@@ -84,7 +84,7 @@
     "url": "https://github.com/NodePit/svg-to-img/issues"
   },
   "engines": {
-    "node": ">= 7.6.0"
+    "node": ">= 10.18.1"
   },
   "license": "MIT",
   "devDependencies": {
