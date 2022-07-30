@@ -20,7 +20,7 @@ describe("SVG to image conversion", () => {
       type: "jpeg"
     });
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "jpg",
       width: 406,
       height: 206
@@ -33,7 +33,7 @@ describe("SVG to image conversion", () => {
       type: "png"
     });
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "png",
       width: 406,
       height: 206
@@ -48,7 +48,7 @@ describe("SVG to image conversion", () => {
 
     const data = fs.readFileSync(`${outputDir}/image.jpg`);
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "jpg",
       width: 406,
       height: 206
@@ -63,7 +63,7 @@ describe("SVG to image conversion", () => {
 
     const data = fs.readFileSync(`${outputDir}/image.ext`);
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "png",
       width: 406,
       height: 206
@@ -76,7 +76,7 @@ describe("SVG to image conversion", () => {
       encoding: "base64"
     });
 
-    expect(sizeOf(Buffer.from(data as string, "base64"))).toEqual({
+    expect(sizeOf(Buffer.from(data, "base64"))).toEqual({
       type: "png",
       width: 406,
       height: 206
@@ -89,7 +89,7 @@ describe("SVG to image conversion", () => {
       encoding: "hex"
     });
 
-    expect(sizeOf(Buffer.from(data as string, "hex"))).toEqual({
+    expect(sizeOf(Buffer.from(data, "hex"))).toEqual({
       type: "png",
       width: 406,
       height: 206
@@ -102,7 +102,7 @@ describe("SVG to image conversion", () => {
       quality: 0
     });
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "jpg",
       width: 406,
       height: 206
@@ -115,7 +115,7 @@ describe("SVG to image conversion", () => {
       quality: 0
     });
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "webp",
       width: 406,
       height: 206
@@ -129,7 +129,7 @@ describe("SVG to image conversion", () => {
       height: 200
     });
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "png",
       width: 1000,
       height: 200
@@ -142,7 +142,7 @@ describe("SVG to image conversion", () => {
       background: "#09f"
     });
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "png",
       width: 406,
       height: 206
@@ -163,7 +163,7 @@ describe("SVG to image conversion", () => {
   test("Responsive SVG (Infer natural dimensions)", async () => {
     const data = await svgToImg.from(responsiveSvgBuffer).toPng();
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "png",
       width: 187,
       height: 150
@@ -177,7 +177,7 @@ describe("SVG to image conversion", () => {
       height: 100
     });
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "png",
       width: 300,
       height: 100
@@ -190,7 +190,7 @@ describe("SVG to image conversion", () => {
       width: 300
     });
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "png",
       width: 300,
       height: 241
@@ -201,7 +201,7 @@ describe("SVG to image conversion", () => {
   test("SVG to PNG shorthand", async () => {
     const data = await svgToImg.from(responsiveSvgBuffer).toPng();
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "png",
       width: 187,
       height: 150
@@ -212,19 +212,19 @@ describe("SVG to image conversion", () => {
   test("SVG to JPEG shorthand", async () => {
     const data = await svgToImg.from(responsiveSvgBuffer).toJpeg();
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "jpg",
       width: 187,
       height: 150
     });
-    fs.writeFileSync(`${outputDir}/da0a53cd944c1fbd56a64684969882cd.jpg`, data as Buffer);
+    fs.writeFileSync(`${outputDir}/da0a53cd944c1fbd56a64684969882cd.jpg`, data);
     expect(md5(data)).toEqual("930d1b440fca8b379fdffe739823faf8");
   });
 
   test("SVG to WEBP shorthand", async () => {
     const data = await svgToImg.from(responsiveSvgBuffer).toWebp();
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "webp",
       width: 187,
       height: 150
@@ -242,7 +242,7 @@ describe("SVG to image conversion", () => {
       }
     });
 
-    expect(sizeOf(data as Buffer)).toEqual({
+    expect(sizeOf(data)).toEqual({
       type: "png",
       width: 100,
       height: 100
