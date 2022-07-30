@@ -16,10 +16,14 @@ export declare class Svg {
     private readonly svg;
     private browserSource;
     constructor(svg: Buffer | string, browserSource: BrowserSource);
-    to(options: IOptions): Promise<Buffer | string>;
-    toPng(options?: IShorthandOptions): Promise<Buffer | string>;
-    toJpeg(options?: IShorthandOptions): Promise<Buffer | string>;
-    toWebp(options?: IShorthandOptions): Promise<Buffer | string>;
+    to(options: Omit<IOptions, "encoding">): Promise<Buffer>;
+    to(options: IOptions): Promise<string>;
+    toPng(options?: Omit<IShorthandOptions, "encoding">): Promise<Buffer>;
+    toPng(options?: IShorthandOptions): Promise<string>;
+    toJpeg(options?: Omit<IShorthandOptions, "encoding">): Promise<Buffer>;
+    toJpeg(options?: IShorthandOptions): Promise<string>;
+    toWebp(options?: Omit<IShorthandOptions, "encoding">): Promise<Buffer>;
+    toWebp(options?: IShorthandOptions): Promise<string>;
     private convertSvg;
 }
 export declare class SvgToImg {

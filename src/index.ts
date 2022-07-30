@@ -80,22 +80,36 @@ export class BrowserSource {
 export class Svg {
   constructor(private readonly svg: Buffer | string, private browserSource: BrowserSource) {}
 
+  public async to(options: Omit<IOptions, "encoding">): Promise<Buffer>;
+  public async to(options: IOptions): Promise<string>;
   public async to(options: IOptions): Promise<Buffer | string> {
     return this.convertSvg(this.svg, options, this.browserSource);
   }
 
+  public async toPng(options?: Omit<IShorthandOptions, "encoding">): Promise<Buffer>;
+  public async toPng(options?: IShorthandOptions): Promise<string>;
   public async toPng(options?: IShorthandOptions): Promise<Buffer | string> {
     return this.convertSvg(this.svg, { ...defaultPngShorthandOptions, ...options }, this.browserSource);
   }
 
+  public async toJpeg(options?: Omit<IShorthandOptions, "encoding">): Promise<Buffer>;
+  public async toJpeg(options?: IShorthandOptions): Promise<string>;
   public async toJpeg(options?: IShorthandOptions): Promise<Buffer | string> {
     return this.convertSvg(this.svg, { ...defaultJpegShorthandOptions, ...options }, this.browserSource);
   }
 
+  public async toWebp(options?: Omit<IShorthandOptions, "encoding">): Promise<Buffer>;
+  public async toWebp(options?: IShorthandOptions): Promise<string>;
   public async toWebp(options?: IShorthandOptions): Promise<Buffer | string> {
     return this.convertSvg(this.svg, { ...defaultWebpShorthandOptions, ...options }, this.browserSource);
   }
 
+  private async convertSvg(
+    inputSvg: Buffer | string,
+    passedOptions: Omit<IOptions, "encoding">,
+    browserSource: BrowserSource
+  ): Promise<Buffer>;
+  private async convertSvg(inputSvg: Buffer | string, passedOptions: IOptions, browserSource: BrowserSource): Promise<string>;
   private async convertSvg(inputSvg: Buffer | string, passedOptions: IOptions, browserSource: BrowserSource): Promise<Buffer | string> {
     const svg = Buffer.isBuffer(inputSvg) ? (inputSvg as Buffer).toString("utf8") : inputSvg;
     const options = { ...defaultOptions, ...passedOptions };
