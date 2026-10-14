@@ -1,5 +1,4 @@
 /// <reference types="node" preserve="true" />
-import { connect as connectToBrowser } from "puppeteer-core";
 // puppeteer-core is ESM-only: the resolution mode lets the CJS declarations import it under node16 resolution
 import type * as puppeteer from "puppeteer-core" with { "resolution-mode": "import" };
 import { getFileTypeFromPath, renderSvg, stringifyFunction, writeFileAsync } from "./helpers";
@@ -205,7 +204,13 @@ export const from = (svg: Buffer | string) => {
 
 /* istanbul ignore next */
 export const connect = (options: IConnectOptions) => {
-  return new SvgToImg(new BrowserSource(async () => connectToBrowser(options)));
+  return new SvgToImg(
+    new BrowserSource(async () => {
+      // puppeteer-core is ESM-only, load it when the first conversion needs it and not when this library is imported (CJS tooling like Jest cannot load it)
+      const { connect } = await import("puppeteer-core");
+      return connect(options);
+    })
+  );
 };
 
 export { IOptions, IShorthandOptions, IConnectOptions };
