@@ -83,7 +83,7 @@ jobs:
             exit 1
           fi
 
-      - run: pnpm exec puppeteer browsers install chrome --install-deps
+      - run: pnpm exec puppeteer browsers install chrome
         if: env.already_published != 'true'
       - run: pnpm run typecheck
         if: env.already_published != 'true'

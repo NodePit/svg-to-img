@@ -21,7 +21,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm exec puppeteer browsers install chrome --install-deps
+      - run: pnpm exec puppeteer browsers install chrome
 
       - run: pnpm run typecheck
 
