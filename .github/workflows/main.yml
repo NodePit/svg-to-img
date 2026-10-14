@@ -33,7 +33,7 @@ jobs:
 
       - run: pnpm run test --forceExit
 
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v7
         if: matrix.node-version == '24.19.0'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
