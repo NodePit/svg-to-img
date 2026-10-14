@@ -1,4 +1,7 @@
-import * as puppeteer from "puppeteer-core";
+/// <reference types="node" preserve="true" />
+import { connect as connectToBrowser } from "puppeteer-core";
+// puppeteer-core is ESM-only: the resolution mode lets the CJS declarations import it under node16 resolution
+import type * as puppeteer from "puppeteer-core" with { "resolution-mode": "import" };
 import { getFileTypeFromPath, renderSvg, stringifyFunction, writeFileAsync } from "./helpers";
 import { config, defaultOptions, defaultPngShorthandOptions, defaultJpegShorthandOptions, defaultWebpShorthandOptions } from "./constants";
 import { IOptions, IShorthandOptions, IConnectOptions } from "./typings";
@@ -32,7 +35,7 @@ export class BrowserSource {
           })
           .catch((error) => {
             this.browserState = "closed";
-            reject(error);
+            reject(unwrapConnectionError(error));
           });
 
         return;
@@ -78,7 +81,10 @@ export class BrowserSource {
 }
 
 export class Svg {
-  constructor(private readonly svg: Buffer | string, private browserSource: BrowserSource) {}
+  constructor(
+    private readonly svg: Buffer | string,
+    private browserSource: BrowserSource
+  ) {}
 
   public async to(options: Omit<IOptions, "encoding">): Promise<Buffer>;
   public async to(options: IOptions): Promise<string>;
@@ -128,7 +134,7 @@ export class Svg {
       }
     }
 
-    const base64 = await page.evaluate(
+    const base64 = (await page.evaluate(
       stringifyFunction(renderSvg, svg, {
         width: options.width,
         height: options.height,
@@ -138,7 +144,7 @@ export class Svg {
         clip: options.clip,
         jpegBackground: config.jpegBackground
       })
-    );
+    )) as string;
 
     browserSource.scheduleBrowserForDestruction();
 
@@ -160,6 +166,16 @@ export class Svg {
   }
 }
 
+// Puppeteer 25 rejects a failed connection with an `ErrorEvent` wrapping Node's `AggregateError` (one error per
+// resolved address), which has an empty message
+/* istanbul ignore next */
+const unwrapConnectionError = (error: unknown) => {
+  const cause = (error as { error?: unknown } | undefined)?.error ?? error;
+  const { message, errors, code } = cause as { message?: string; errors?: Error[]; code?: string };
+  if (message || !Array.isArray(errors)) return cause;
+  return Object.assign(new Error(errors.map((e) => e.message).join("; "), { cause }), { code });
+};
+
 export class SvgToImg {
   constructor(private readonly browserSource: BrowserSource) {}
   public from(svg: Buffer | string) {
@@ -169,11 +185,11 @@ export class SvgToImg {
 
 const defaultBrowserSource = new BrowserSource(async () => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
     const puppeteerFull = require("puppeteer");
 
     return puppeteerFull.launch(config.puppeteer);
-  } catch (err) {
+  } catch {
     /* istanbul ignore next */
     throw new Error(
       "NPM module `puppeteer` is not available. Either add it as " +
@@ -189,7 +205,7 @@ export const from = (svg: Buffer | string) => {
 
 /* istanbul ignore next */
 export const connect = (options: IConnectOptions) => {
-  return new SvgToImg(new BrowserSource(async () => puppeteer.connect(options)));
+  return new SvgToImg(new BrowserSource(async () => connectToBrowser(options)));
 };
 
 export { IOptions, IShorthandOptions, IConnectOptions };

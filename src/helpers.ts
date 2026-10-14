@@ -5,7 +5,7 @@ export const getFileTypeFromPath = (path: string) => {
   return path.toLowerCase().replace(new RegExp("jpg", "g"), "jpeg").split(".").reverse()[0];
 };
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const stringifyFunction = (func: Function, ...argsArray: (string | object | number)[]) => {
   // Remove istanbul coverage instruments
   const functionString = func.toString().replace(/cov_(.+?)\+\+[,;]?/g, "");
@@ -27,17 +27,7 @@ export const stringifyFunction = (func: Function, ...argsArray: (string | object
   return `(${functionString})(${args.join(",")})`;
 };
 
-export const writeFileAsync = async (path: string, data: Buffer) => {
-  return new Promise<void>((resolve, reject) => {
-    fs.writeFile(path, data, (err: NodeJS.ErrnoException | null) => {
-      if (err) {
-        return reject(err);
-      }
-
-      resolve();
-    });
-  });
-};
+export const writeFileAsync = (path: string, data: Buffer) => fs.promises.writeFile(path, data);
 
 export const renderSvg = async (
   svg: string,
@@ -119,7 +109,7 @@ export const renderSvg = async (
       }
 
       const dataURI = canvas.toDataURL("image/" + options.type, options.quality);
-      const base64 = dataURI.substr(`data:image/${options.type};base64,`.length);
+      const base64 = dataURI.slice(`data:image/${options.type};base64,`.length);
 
       document.body.removeChild(img);
       resolve(base64);
