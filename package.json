@@ -1,6 +1,6 @@
 {
   "name": "@nodepit/svg-to-img",
-  "version": "4.0.0-beta.0",
+  "version": "4.0.0-beta.1",
   "description": "A node.js library to convert SVGs to images built with Puppeteer.",
   "homepage": "https://github.com/NodePit/svg-to-img",
   "keywords": [
