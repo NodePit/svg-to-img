@@ -18,8 +18,10 @@
 To use svg-to-img in your project, run:
 
 ```bash
-npm install @nodepit/svg-to-img -S
+npm install @nodepit/svg-to-img
 ```
+
+Starting from v4.0.0, svg-to-img requires Node 22.12 or later and Puppeteer 25, which in turn needs a recent Chrome (it does not work with Chrome 78, as shipped in `browserless/chrome:1.x`; use e.g. `ghcr.io/browserless/chromium`).
 
 Starting from v3.0.0, Chromium will **no longer** automatically be downloaded when installing this dependency (instead of depending on `puppetteer`, the library now depends on `puppeteer-core`; see [here](https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#puppeteer-vs-puppeteer-core)). We assume that you either have an existing local or remote Chromium, or that you explicitly install `puppeteer` within your project to to have Chromium downloaded.
 
@@ -155,6 +157,19 @@ This method is simply a shorthand for the `to` method.
 
 This method is simply a shorthand for the `to` method.
 
+### Errors
+
+All conversion methods return a promise that rejects with an `Error` in these cases:
+
+| Case | Error |
+| --- | --- |
+| The input is not a valid SVG | message `Malformed SVG` |
+| The browser cannot be reached (`connect`) | message lists the refused addresses, `code` is `ECONNREFUSED`; the next call tries to connect again |
+| `puppeteer` is not installed, and you use `from` (which launches a local browser) | message ``NPM module `puppeteer` is not available…`` |
+| The `path` option cannot be written | the error of the file system, e.g. `ENOENT` |
+
+Errors of the browser itself (e.g. the browser crashes during the conversion) are passed on unchanged.
+
 ## Built with
 
 * [node.js](https://nodejs.org/en/) - Cross-platform JavaScript run-time environment for executing JavaScript code server-side. 
@@ -168,7 +183,7 @@ When contributing to this project, please first discuss the change you wish to m
 
 Update the [README.md](https://github.com/etienne-martin/svg-to-img/blob/master/README.md) with details of changes to the library.
 
-Execute `npm run test` and update the [tests](https://github.com/etienne-martin/svg-to-img/tree/master/src/tests) if needed.
+Execute `pnpm run test` and update the [tests](https://github.com/etienne-martin/svg-to-img/tree/master/src/tests) if needed.
 
 ## Authors
 
