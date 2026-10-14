@@ -38,7 +38,10 @@
     "test:watch": "jest src --coverage --verbose --watch",
     "prebuild": "rm -rf dist/ && pnpm run lint",
     "build": "tsc --pretty",
-    "prepare": "pnpm run build && husky"
+    "prepare": "pnpm run build && husky",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run typecheck && pnpm test",
+    "postversion": "git push --follow-tags"
   },
   "jest": {
     "setupFiles": [
@@ -131,6 +134,16 @@
     "puppeteer": {
       "optional": true
     }
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.19.0",
+      "onFail": "warn"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "packageManager": "pnpm@12.12.1"
 }
