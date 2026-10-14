@@ -1,0 +1,10 @@
+# pnpm reads its configuration from this file only (`.npmrc` is limited to auth and registry
+# settings). This repo holds a single package, there are no workspaces.
+
+# Every dependency with a build script must be listed here, or the install fails (`strictDepBuilds`)
+allowBuilds:
+  # downloads the Chrome that the tests and `from()` launch
+  puppeteer: true
+  # the binary comes with the platform package, the script only checks it
+  '@swc/core': false
+  fsevents: false

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] – Unreleased
+### Changed
+* (breaking) Update to Puppeteer 25. It needs a current Chrome (tested with Chrome 156 and browserless v2); the Chrome 78 of `browserless/chrome:1.x` no longer works, use e.g. `ghcr.io/browserless/chromium` instead
+* (breaking) Require at least Node version 22.12.0
+* (breaking) Only the package entry point can be imported, deep imports into `dist` are no longer possible
+* A malformed SVG now results in the error message `Malformed SVG` (without the `Error:` prefix)
+* `puppeteer` is declared as an optional peer dependency. It is only needed if you let the library launch a local browser, it is not needed with `connect`
+* Releases are published from GitHub Actions with provenance
+
+### Security
+* Resolve the known vulnerabilities in `ws`, `tar-fs`, and `extract-zip`, which were pulled in by the previous Puppeteer version
+
 ## [3.1.0] – 2022-07-30
 ### Changes
 * Return types depending on whether a `Buffer` (no `encoding` specified) or `string` (`encoding` specified) is returned

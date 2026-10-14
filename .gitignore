@@ -61,3 +61,5 @@ jspm_packages/
 src/tests/img/*
 
 dist/typings/index.js
+# Build output
+dist/
