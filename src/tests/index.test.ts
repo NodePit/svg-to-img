@@ -1,5 +1,5 @@
 import * as fs from "node:fs";
-import puppeteer from "puppeteer";
+import puppeteer, { type Browser } from "puppeteer";
 import { describe, expect, test } from "vitest";
 import * as svgToImg from "../index";
 import { config } from "../constants";
@@ -302,6 +302,60 @@ describe("SVG to image conversion", () => {
       .toPng();
 
     expect(sizeOf(data)).toEqual({ type: "png", width: 10, height: 10 });
+  });
+
+  test("Browser which disconnects is replaced", async () => {
+    const browsers: Browser[] = [];
+    const browserSource = new svgToImg.BrowserSource(async () => {
+      const browser = await puppeteer.launch(config.puppeteer);
+      browsers.push(browser);
+      return browser;
+    });
+    const convert = new svgToImg.SvgToImg(browserSource);
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'/>";
+
+    await convert.from(svg).toPng();
+    const disconnected = new Promise((resolve) => browsers[0]!.once("disconnected", resolve));
+    browsers[0]!.process()!.kill("SIGKILL");
+    await disconnected;
+    const data = await convert.from(svg).toPng();
+
+    expect(sizeOf(data)).toEqual({ type: "png", width: 10, height: 10 });
+    expect(browsers).toHaveLength(2);
+  });
+
+  test("Browser closed when idle does not mark the next browser closed", async () => {
+    const browsers: Browser[] = [];
+    let launches = 0;
+    let firstDisconnected: Promise<unknown> = Promise.resolve();
+    const browserSource = new svgToImg.BrowserSource(async () => {
+      launches++;
+      // the second browser is still opening when the first one disconnects
+      await firstDisconnected;
+      const browser = await puppeteer.launch(config.puppeteer);
+      browsers.push(browser);
+      return browser;
+    });
+    const convert = new svgToImg.SvgToImg(browserSource);
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'/>";
+
+    await convert.from(svg).toPng();
+    const firstBrowser = browsers[0]!;
+    firstDisconnected = new Promise((resolve) => firstBrowser.once("disconnected", resolve));
+    const close = firstBrowser.close.bind(firstBrowser);
+    const closing = new Promise<void>((resolve) => {
+      firstBrowser.close = () => {
+        resolve();
+        return close();
+      };
+    });
+    await closing;
+    const second = convert.from(svg).toPng();
+    await firstDisconnected;
+    const third = convert.from(svg).toPng();
+    await Promise.all([second, third]);
+
+    expect(launches).toBe(2);
   });
 
   test("Special character encoding", async () => {
