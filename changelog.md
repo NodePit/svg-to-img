@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Export the TS interface `IBoundingBox`, the type of the `clip` option
 - Option `timeout`, the maximum time in milliseconds to render the SVG; defaults to 30 seconds
 
+### Deprecated
+
+- The `ignoreHTTPSErrors` option of `connect`, which has no effect: Puppeteer 25 does not know it
+
 ### Fixed
 
 - An SVG with a backtick (`` ` ``) or `${…}` in it no longer fails with `SyntaxError` or `ReferenceError`: the SVG is passed to the browser as a JSON string instead of a template literal

@@ -253,8 +253,8 @@ const defaultBrowserSource = new BrowserSource(async () => {
   } catch {
     /* v8 ignore next */
     throw new Error(
-      "NPM module `puppeteer` is not available. Either add it as " +
-        " dependency to your project, or use the `connect` function and supply " +
+      "NPM module `puppeteer` is not available. Either add it as a " +
+        "dependency to your project, or use the `connect` function and supply " +
         "`browserWSEndpoint` if you want to use a running Puppeteer endpoint."
     );
   }
