@@ -45,7 +45,7 @@ apt-get install -yq gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups
 **Example** - converting a `svg` to `png`:
 
 ```javascript
-const svgToImg = require("svg-to-img");
+const svgToImg = require("@nodepit/svg-to-img");
 
 (async () => {
   const image = await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
@@ -57,7 +57,7 @@ const svgToImg = require("svg-to-img");
 **Example** - converting a `svg` to `jpeg` and saving the image as *example.jpeg*:
 
 ```javascript
-const svgToImg = require("svg-to-img");
+const svgToImg = require("@nodepit/svg-to-img");
 
 (async () => {
   await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toJpeg({
@@ -69,7 +69,7 @@ const svgToImg = require("svg-to-img");
 **Example** - resizing a `svg` proportionally and converting it to `webp`:
 
 ```javascript
-const svgToImg = require("svg-to-img");
+const svgToImg = require("@nodepit/svg-to-img");
 
 (async () => {
   const image = await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toWebp({
@@ -83,7 +83,7 @@ const svgToImg = require("svg-to-img");
 **Example** - converting a `svg` to base64-encoded png:
 
 ```javascript
-const svgToImg = require("svg-to-img");
+const svgToImg = require("@nodepit/svg-to-img");
 
 (async () => {
   const image = await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng({
@@ -97,7 +97,7 @@ const svgToImg = require("svg-to-img");
 **Example** - connect to Puppeteer `browserWSEndpoint`:
 
 ```javascript
-const svgToImg = require("svg-to-img");
+const svgToImg = require("@nodepit/svg-to-img");
 const convert = svgToImg.connect({
   browserWSEndpoint: "ws://localhost:3000"
 });
@@ -181,9 +181,9 @@ Errors of the browser itself (e.g. the browser crashes during the conversion) ar
 
 When contributing to this project, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
 
-Update the [README.md](https://github.com/etienne-martin/svg-to-img/blob/master/README.md) with details of changes to the library.
+Update the [readme](https://github.com/NodePit/svg-to-img/blob/master/readme.md) with details of changes to the library.
 
-Execute `pnpm run test` and update the [tests](https://github.com/etienne-martin/svg-to-img/tree/master/src/tests) if needed.
+Execute `pnpm run test` and update the [tests](https://github.com/NodePit/svg-to-img/tree/master/src/tests) if needed.
 
 ## Authors
 
@@ -192,4 +192,4 @@ Execute `pnpm run test` and update the [tests](https://github.com/etienne-martin
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/etienne-martin/svg-to-img/blob/master/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/NodePit/svg-to-img/blob/master/LICENSE) file for details.
