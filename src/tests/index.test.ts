@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import puppeteer from "puppeteer";
 import { describe, expect, test } from "vitest";
 import * as svgToImg from "../index";
+import { config } from "../constants";
 import { PNG } from "pngjs";
 import { imageSize as sizeOf } from "image-size";
 
@@ -281,7 +282,8 @@ describe("SVG to image conversion", () => {
 
   test("Browser without an open page", async () => {
     const browserSource = new svgToImg.BrowserSource(async () => {
-      const browser = await puppeteer.launch();
+      // the arguments `from` launches with, which a CI runner without a user namespace sandbox needs
+      const browser = await puppeteer.launch(config.puppeteer);
       for (const page of await browser.pages()) {
         await page.close();
       }
