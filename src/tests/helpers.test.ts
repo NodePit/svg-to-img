@@ -1,13 +1,15 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
-import { getFileTypeFromPath, stringifyFunction, renderSvg, writeFileAsync } from "../helpers";
+import "vitest-canvas-mock";
+import { beforeEach, describe, expect, test, vi } from "vitest";
+import { getFileTypeFromPath, stringifyFunction, renderSvg } from "../helpers";
 import { config } from "../constants";
 
 beforeEach(() => {
   // Mock img.addEventListener("load|error", () => {});
-  Element.prototype.addEventListener = jest.fn((event, callback: EventListener) => {
+  Element.prototype.addEventListener = vi.fn((event, callback: EventListener) => {
     if (event === "load") {
       setTimeout(callback, 10);
     }
@@ -15,19 +17,20 @@ beforeEach(() => {
 });
 
 describe("Helper functions", () => {
-  test("Get file type from path", async () => {
-    const fileType = await getFileTypeFromPath("test.jpg");
+  test("Get file type from path", () => {
+    const fileType = getFileTypeFromPath("test.jpg");
 
     expect(fileType).toBe("jpeg");
   });
 
-  test("Stringify function", async () => {
-    const func = stringifyFunction((str: string, obj: object, num: number) => str + obj + num, "a", { a: 1 }, 1);
+  test("Stringify function", () => {
+    const func = stringifyFunction((str: string, obj: object, num: number) => [str, obj, num], "a", { a: 1 }, 1);
 
-    expect(func).toEqual(`((str, obj, num) => str + obj + num)("a",{"a":1},1)`);
+    expect(func).toMatch(/\)\("a",\{"a":1\},1\)$/);
+    expect(eval(func)).toEqual(["a", { a: 1 }, 1]);
   });
 
-  test("Stringify function with a string which looks like code", async () => {
+  test("Stringify function with a string which looks like code", () => {
     const text = "`a` ${notDefined} \"b\" 'c' \\n \u2028 äöü";
     const func = stringifyFunction((str: string) => str, text);
 
@@ -44,7 +47,7 @@ describe("Helper functions", () => {
       jpegBackground: config.jpegBackground
     });
 
-    // https://github.com/hustcc/jest-canvas-mock/blob/315d56b2dacf292f27fe84b690620957ddeadbdd/src/mock/prototype.js#L103
+    // `toDataURL` of vitest-canvas-mock (taken from jest-canvas-mock) always returns this
     expect(base64).toBe("00");
   });
 
@@ -75,32 +78,18 @@ describe("Helper functions", () => {
   });
 
   test("Malformed SVG", async () => {
-    Element.prototype.addEventListener = jest.fn((event, callback: EventListener) => {
+    Element.prototype.addEventListener = vi.fn((event, callback: EventListener) => {
       if (event === "error") {
         setTimeout(callback, 10);
       }
     });
 
-    try {
-      await renderSvg("THIS IS NO SVG", {
+    await expect(
+      renderSvg("THIS IS NO SVG", {
         type: "png",
         quality: 1,
         jpegBackground: config.jpegBackground
-      });
-    } catch (error) {
-      expect((error as Error).message).toContain("Malformed SVG");
-    }
-  });
-
-  test("Write file asynchronously", async () => {
-    let errorThrown = false;
-
-    try {
-      await writeFileAsync("...//NOT-A-VALID-PATH//...", Buffer.from("dummy-data", "utf8"));
-    } catch {
-      errorThrown = true;
-    }
-
-    expect(errorThrown).toEqual(true);
+      })
+    ).rejects.toThrow("Malformed SVG");
   });
 });

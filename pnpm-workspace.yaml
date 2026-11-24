@@ -5,6 +5,4 @@
 allowBuilds:
   # downloads the Chrome that the tests and `from()` launch
   puppeteer: true
-  # the binary comes with the platform package, the script only checks it
-  '@swc/core': false
   fsevents: false

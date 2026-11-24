@@ -18,7 +18,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist"
@@ -31,65 +32,23 @@
     "Philipp Katz (https://gitlab.com/qqilihq)"
   ],
   "scripts": {
-    "dev": "tsc --pretty --watch",
-    "lint": "eslint --fix ./src",
-    "pretest": "pnpm run lint",
-    "test": "jest src --coverage --verbose",
-    "test:watch": "jest src --coverage --verbose --watch",
-    "prebuild": "rm -rf dist/ && pnpm run lint",
-    "build": "tsc --pretty",
+    "dev": "tsc -p tsconfig.build.json --pretty --watch",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "lint": "pnpm run lint:eslint && pnpm run lint:format && pnpm run lint:types && pnpm run lint:knip && pnpm run lint:changelog",
+    "lint:eslint": "eslint .",
+    "lint:format": "prettier --check .",
+    "lint:types": "tsc --noEmit",
+    "lint:knip": "knip",
+    "lint:changelog": "changelog-keeper lint --section-types Added,Changed,Deprecated,Removed,Fixed,Security,Breaking",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "prebuild": "pnpm run clean",
+    "build": "tsc -p tsconfig.build.json --pretty",
     "prepare": "pnpm run build && husky",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "pnpm run typecheck && pnpm test",
+    "prepublishOnly": "pnpm run lint && pnpm test",
+    "preversion": "pnpm run lint",
+    "version": "changelog-keeper verify --section-types Added,Changed,Deprecated,Removed,Fixed,Security,Breaking || (git checkout -- package.json && exit 1)",
     "postversion": "git push --follow-tags"
-  },
-  "jest": {
-    "setupFiles": [
-      "jest-canvas-mock"
-    ],
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest",
-      "^.+\\.js$": [
-        "@swc/jest",
-        {
-          "module": {
-            "type": "commonjs"
-          }
-        }
-      ]
-    },
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json",
-      "node"
-    ],
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/coverage/",
-      "/dist/",
-      "/typings/",
-      "/tests/"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": -10
-      }
-    },
-    "testMatch": [
-      "**/?(*.)(test).(tsx|ts)"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.(tsx|ts)"
-    ],
-    "transformIgnorePatterns": [
-      "/node_modules/(?!(?:\\.pnpm/[^/]+/node_modules/)?(?:puppeteer-core|puppeteer|@puppeteer/browsers)/)"
-    ]
   },
   "repository": {
     "type": "git",
@@ -103,26 +62,28 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@swc/core": "^1.16.18",
-    "@swc/jest": "^0.2.39",
-    "@types/jest": "^29.5.14",
+    "@eslint/js": "^10.0.1",
+    "@qqilihq/changelog-keeper": "0.1.0-beta.3",
     "@types/node": "~22.12.0",
     "@types/pngjs": "^6.0.5",
-    "@typescript-eslint/eslint-plugin": "^8.71.1",
-    "@typescript-eslint/parser": "^8.71.1",
-    "eslint": "^8.57.1",
-    "eslint-plugin-prettier": "^5.5.6",
+    "@vitest/coverage-v8": "^5.1.1",
+    "@vitest/eslint-plugin": "^1.6.28",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^18.5.0",
     "husky": "^9.1.7",
     "image-size": "^2.0.4",
-    "jest": "^29.7.0",
-    "jest-canvas-mock": "^2.5.8",
-    "jest-environment-jsdom": "^29.7.0",
+    "jsdom": "~28.1.0",
+    "knip": "^6.48.0",
+    "lint-staged": "^17.6.2",
     "pngjs": "^7.0.0",
     "prettier": "^3.9.10",
     "puppeteer": "^25.13.0",
     "ts-expect": "^1.3.0",
-    "ts-jest": "^29.4.14",
-    "typescript": "^5.9.3"
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^5.1.1",
+    "vitest-canvas-mock": "^1.2.0"
   },
   "dependencies": {
     "puppeteer-core": "^25.13.0"
@@ -138,7 +99,7 @@
   "devEngines": {
     "runtime": {
       "name": "node",
-      "version": "24.19.0",
+      "version": "26.13.1",
       "onFail": "warn"
     }
   },

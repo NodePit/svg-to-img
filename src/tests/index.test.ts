@@ -1,5 +1,8 @@
-import * as fs from "fs";
+import * as fs from "node:fs";
+import puppeteer from "puppeteer";
+import { describe, expect, test } from "vitest";
 import * as svgToImg from "../index";
+import { config } from "../constants";
 import { PNG } from "pngjs";
 import { imageSize as sizeOf } from "image-size";
 
@@ -10,11 +13,11 @@ const responsiveSvgBuffer = fs.readFileSync(`${inputDir}/logo.svg`);
 const svgString = svgBuffer.toString("utf8");
 
 // Exact bytes depend on the Chrome version and platform, so check pixels instead of hashes
-const pixel = (png: Buffer, x: number, y: number) => {
+function pixel(png: Buffer, x: number, y: number) {
   const { data, width } = PNG.sync.read(png);
   const i = (y * width + x) * 4;
   return [data[i], data[i + 1], data[i + 2], data[i + 3]];
-};
+}
 
 // Create output directory
 fs.rmSync(outputDir, { recursive: true, force: true });
@@ -61,6 +64,14 @@ describe("SVG to image conversion", () => {
       width: 406,
       height: 206
     });
+  });
+
+  test("Path which cannot be written", async () => {
+    await expect(
+      svgToImg.from(svgBuffer).to({
+        path: `${outputDir}/missing-directory/image.png`
+      })
+    ).rejects.toThrow("ENOENT");
   });
 
   test("Unknown file extension", async () => {
@@ -153,13 +164,11 @@ describe("SVG to image conversion", () => {
   });
 
   test("Malformed SVG", async () => {
-    try {
-      await svgToImg.from("THIS IS NO SVG").to({
+    await expect(
+      svgToImg.from("THIS IS NO SVG").to({
         type: "png"
-      });
-    } catch (error) {
-      expect((error as Error).message).toContain("Malformed SVG");
-    }
+      })
+    ).rejects.toThrow("Malformed SVG");
   });
 
   test("Responsive SVG (Infer natural dimensions)", async () => {
@@ -246,12 +255,12 @@ describe("SVG to image conversion", () => {
   });
 
   test("Wait for browser destruction", async () => {
-    await svgToImg.from(responsiveSvgBuffer).toJpeg();
+    await expect(svgToImg.from(responsiveSvgBuffer).toJpeg()).resolves.toBeInstanceOf(Buffer);
 
-    return new Promise<void>((resolve) => setTimeout(() => resolve(), 2000));
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), 2000));
   });
 
-  test("Test multiple requests in parallel", async () => {
+  test("Multiple requests in a row", async () => {
     let errors = 0;
 
     for (let i = 0; i < 10; i++) {
@@ -269,35 +278,36 @@ describe("SVG to image conversion", () => {
 
   test("Propagates error when cannot connect", async () => {
     const convert = svgToImg.connect({ browserWSEndpoint: "ws://localhost:12345" });
-    try {
-      await convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
-      fail();
-    } catch (error) {
-      expect((error as Error).message).toContain("ECONNREFUSED");
-    }
+    await expect(convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng()).rejects.toThrow("ECONNREFUSED");
   });
 
   test("Propagates error when cannot connect with subsequent attempts", async () => {
     const convert = svgToImg.connect({ browserWSEndpoint: "ws://localhost:12345" });
-    let errors = 0;
     for (let i = 0; i < 10; i++) {
-      try {
-        await convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
-        fail();
-      } catch (error) {
-        expect((error as Error).message).toContain("ECONNREFUSED");
-        errors++;
-      }
+      await expect(convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng()).rejects.toThrow("ECONNREFUSED");
     }
-    expect(errors).toBe(10);
+  });
+
+  test("Browser without an open page", async () => {
+    const browserSource = new svgToImg.BrowserSource(async () => {
+      // the arguments `from` launches with, which a CI runner without a user namespace sandbox needs
+      const browser = await puppeteer.launch(config.puppeteer);
+      for (const page of await browser.pages()) {
+        await page.close();
+      }
+      return browser;
+    });
+    const data = await new svgToImg.SvgToImg(browserSource)
+      .from("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'/>")
+      .toPng();
+
+    expect(sizeOf(data)).toEqual({ type: "png", width: 10, height: 10 });
   });
 
   test("Special character encoding", async () => {
-    try {
-      await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'><text x='0' y='0'>äöüÄÖÜçéèñ</text></svg>").toPng();
-    } catch {
-      fail();
-    }
+    await expect(
+      svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'><text x='0' y='0'>äöüÄÖÜçéèñ</text></svg>").toPng()
+    ).resolves.toBeInstanceOf(Buffer);
   });
 
   test("SVG with text which looks like code", async () => {

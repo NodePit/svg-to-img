@@ -1,7 +1,13 @@
+import { describe, it } from "vitest";
 import { expectType } from "ts-expect";
 import * as svgToImg from "../index";
+import type { IBoundingBox } from "../index";
 
 describe("Return typing", () => {
+  it("Exports the type of the clip option", () => {
+    expectType<IBoundingBox | undefined>({} as svgToImg.IOptions["clip"]);
+  });
+
   it("Has return type depending on options", () => {
     expectType<Promise<Buffer>>(svgToImg.from("data").to({}));
     expectType<Promise<Buffer>>(svgToImg.from("data").to({ type: "png" }));

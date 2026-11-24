@@ -1,9 +1,11 @@
 /// <reference types="node" preserve="true" />
 // puppeteer-core is ESM-only: the resolution mode lets the CJS declarations import it under node16 resolution
 import type * as puppeteer from "puppeteer-core" with { "resolution-mode": "import" };
-import { getFileTypeFromPath, renderSvg, stringifyFunction, writeFileAsync } from "./helpers";
+import type * as PuppeteerFull from "puppeteer" with { "resolution-mode": "import" };
+import { writeFile } from "node:fs/promises";
+import { getFileTypeFromPath, renderSvg, stringifyFunction } from "./helpers";
 import { config, defaultOptions, defaultPngShorthandOptions, defaultJpegShorthandOptions, defaultWebpShorthandOptions } from "./constants";
-import { IOptions, IShorthandOptions, IConnectOptions } from "./typings";
+import { IBoundingBox, IOptions, IShorthandOptions, IConnectOptions } from "./typings";
 
 export class BrowserSource {
   private queue: Array<(result: puppeteer.Browser) => void> = [];
@@ -32,8 +34,10 @@ export class BrowserSource {
 
             this.executeQueuedRequests(this.browserInstance);
           })
-          .catch((error) => {
+          .catch((error: unknown) => {
             this.browserState = "closed";
+            // passes on what Puppeteer rejected with, which is not necessarily an Error
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(unwrapConnectionError(error));
           });
 
@@ -61,11 +65,11 @@ export class BrowserSource {
     if (this.browserDestructionTimeout) {
       clearTimeout(this.browserDestructionTimeout);
     }
-    this.browserDestructionTimeout = global.setTimeout(async () => {
+    this.browserDestructionTimeout = global.setTimeout(() => {
       /* istanbul ignore next */
       if (this.browserInstance) {
         this.browserState = "closed";
-        await this.browserInstance.close();
+        void this.browserInstance.close();
       }
     }, 500);
   }
@@ -116,10 +120,11 @@ export class Svg {
   ): Promise<Buffer>;
   private async convertSvg(inputSvg: Buffer | string, passedOptions: IOptions, browserSource: BrowserSource): Promise<string>;
   private async convertSvg(inputSvg: Buffer | string, passedOptions: IOptions, browserSource: BrowserSource): Promise<Buffer | string> {
-    const svg = Buffer.isBuffer(inputSvg) ? (inputSvg as Buffer).toString("utf8") : inputSvg;
+    const svg = Buffer.isBuffer(inputSvg) ? inputSvg.toString("utf8") : inputSvg;
     const options = { ...defaultOptions, ...passedOptions };
     const browser = await browserSource.getBrowser();
-    const page = (await browser.pages())[0];
+    // A browser reached with `connect` can have no page open
+    const page = (await browser.pages())[0] ?? (await browser.newPage());
 
     // ⚠️ Offline mode is enabled to prevent any HTTP requests over the network
     await page.setOfflineMode(true);
@@ -150,7 +155,7 @@ export class Svg {
     const buffer = Buffer.from(base64, "base64");
 
     if (options.path) {
-      await writeFileAsync(options.path, buffer);
+      await writeFile(options.path, buffer);
     }
 
     if (options.encoding === "base64") {
@@ -168,12 +173,12 @@ export class Svg {
 // Puppeteer 25 rejects a failed connection with an `ErrorEvent` wrapping Node's `AggregateError` (one error per
 // resolved address), which has an empty message
 /* istanbul ignore next */
-const unwrapConnectionError = (error: unknown) => {
+function unwrapConnectionError(error: unknown) {
   const cause = (error as { error?: unknown } | undefined)?.error ?? error;
   const { message, errors, code } = cause as { message?: string; errors?: Error[]; code?: string };
   if (message || !Array.isArray(errors)) return cause;
   return Object.assign(new Error(errors.map((e) => e.message).join("; "), { cause }), { code });
-};
+}
 
 export class SvgToImg {
   constructor(private readonly browserSource: BrowserSource) {}
@@ -183,11 +188,11 @@ export class SvgToImg {
 }
 
 const defaultBrowserSource = new BrowserSource(async () => {
+  let puppeteerFull: typeof PuppeteerFull;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
-    const puppeteerFull = require("puppeteer");
-
-    return puppeteerFull.launch(config.puppeteer);
+    // `puppeteer` is an optional peer dependency, so it is loaded only once a conversion needs it
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    puppeteerFull = require("puppeteer") as typeof PuppeteerFull;
   } catch {
     /* istanbul ignore next */
     throw new Error(
@@ -196,14 +201,16 @@ const defaultBrowserSource = new BrowserSource(async () => {
         "`browserWSEndpoint` if you want to use a running Puppeteer endpoint."
     );
   }
+
+  return await puppeteerFull.launch(config.puppeteer);
 });
 
-export const from = (svg: Buffer | string) => {
+export function from(svg: Buffer | string) {
   return new SvgToImg(defaultBrowserSource).from(svg);
-};
+}
 
 /* istanbul ignore next */
-export const connect = (options: IConnectOptions) => {
+export function connect(options: IConnectOptions) {
   return new SvgToImg(
     new BrowserSource(async () => {
       // puppeteer-core is ESM-only, load it when the first conversion needs it and not when this library is imported (CJS tooling like Jest cannot load it)
@@ -211,6 +218,6 @@ export const connect = (options: IConnectOptions) => {
       return connect(options);
     })
   );
-};
+}
 
-export { IOptions, IShorthandOptions, IConnectOptions };
+export { IBoundingBox, IOptions, IShorthandOptions, IConnectOptions };

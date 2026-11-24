@@ -2,11 +2,11 @@
 
 #### A node.js library to convert SVGs to images built with [Puppeteer](https://github.com/GoogleChrome/puppeteer).
 
-
 **NOTE:** This is a fork from Etienne Martin’s <a href="https://github.com/etienne-martin/svg-to-img">svg-to-img</a> which adds the possibility to connect to a Puppeteer endpoint (see <a href="https://github.com/etienne-martin/svg-to-img/pull/19">here</a>).
 
 <!-- [![Coveralls github](https://img.shields.io/coveralls/github/etienne-martin/svg-to-img.svg)](https://coveralls.io/github/etienne-martin/svg-to-img) -->
 <!-- [![CircleCI build](https://img.shields.io/circleci/project/github/RedSparr0w/node-csgo-parser.svg)](https://circleci.com/gh/etienne-martin/svg-to-img) -->
+
 [![node version](https://img.shields.io/node/v/%40nodepit%2Fsvg-to-img.svg)](https://www.npmjs.com/package/%40nodepit%2Fsvg-to-img)
 [![npm version](https://img.shields.io/npm/v/%40nodepit%2Fsvg-to-img.svg)](https://www.npmjs.com/package/%40nodepit%2Fsvg-to-img)
 [![npm monthly downloads](https://img.shields.io/npm/dm/%40nodepit%2Fsvg-to-img.svg)](https://www.npmjs.com/package/%40nodepit%2Fsvg-to-img)
@@ -45,19 +45,19 @@ apt-get install -yq gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups
 **Example** - converting a `svg` to `png`:
 
 ```javascript
-const svgToImg = require("svg-to-img");
+const svgToImg = require("@nodepit/svg-to-img");
 
 (async () => {
   const image = await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
-  
+
   console.log(image);
 })();
 ```
 
-**Example** - converting a `svg` to `jpeg` and saving the image as *example.jpeg*:
+**Example** - converting a `svg` to `jpeg` and saving the image as _example.jpeg_:
 
 ```javascript
-const svgToImg = require("svg-to-img");
+const svgToImg = require("@nodepit/svg-to-img");
 
 (async () => {
   await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toJpeg({
@@ -69,13 +69,13 @@ const svgToImg = require("svg-to-img");
 **Example** - resizing a `svg` proportionally and converting it to `webp`:
 
 ```javascript
-const svgToImg = require("svg-to-img");
+const svgToImg = require("@nodepit/svg-to-img");
 
 (async () => {
   const image = await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toWebp({
     width: 300
   });
-  
+
   console.log(image);
 })();
 ```
@@ -83,13 +83,13 @@ const svgToImg = require("svg-to-img");
 **Example** - converting a `svg` to base64-encoded png:
 
 ```javascript
-const svgToImg = require("svg-to-img");
+const svgToImg = require("@nodepit/svg-to-img");
 
 (async () => {
   const image = await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng({
     encoding: "base64"
   });
-  
+
   console.log(image);
 })();
 ```
@@ -97,7 +97,7 @@ const svgToImg = require("svg-to-img");
 **Example** - connect to Puppeteer `browserWSEndpoint`:
 
 ```javascript
-const svgToImg = require("svg-to-img");
+const svgToImg = require("@nodepit/svg-to-img");
 const convert = svgToImg.connect({
   browserWSEndpoint: "ws://localhost:3000"
 });
@@ -112,18 +112,21 @@ const convert = svgToImg.connect({
 ## API Documentation
 
 ### svgToImg.from(svg)
-- `svg` <Buffer|string>  SVG markup to be converted.
+
+- `svg` <Buffer|string> SVG markup to be converted.
 - returns: <[Svg]> a new Svg object.
 
 The method returns a svg instance based on the given argument.
 
 ### svgToImg.connect(options)
+
 - `options` <[Object]> Puppeteer [connect options](https://github.com/puppeteer/puppeteer/blob/master/docs/api.md#puppeteerconnectoptions) object which will typically contain a `browserWSEndpoint` property.
 - returns: <[SvgToImg]> an instance which is connected with the specified Puppeteer endpoint.
 
 Use this method if you want to connect to a running Puppeteer endpoint (see [here](https://github.com/etienne-martin/svg-to-img/issues/9)). Note that the actual connection is established lazily; this means this method will always return, even when the given `browserWSEndpoint` cannot be reached -- in this case, errors will be thrown later when calling one of the `to` functions.
 
 ### svg.to([options])
+
 - `options` <[Object]> Options object which might have the following properties:
   - `path` <[string]> The file path to save the image to. The image type will be inferred from file extension. If `path` is a relative path, then it is resolved relative to [current working directory](https://nodejs.org/api/process.html#process_process_cwd). If no path is provided, the image won't be saved to the disk.
   - `type` <[string]> Specify image type, can be either `png`, `jpeg` or `webp`. Defaults to `png`.
@@ -140,18 +143,21 @@ Use this method if you want to connect to a running Puppeteer endpoint (see [her
 - returns: <[Promise]<Buffer|String>> Promise which resolves to the output image.
 
 ### svg.toPng([options])
+
 - `options` <[Object]> Optional options object that can have the same properties as the `to` method except for the type property.
 - returns: <[Promise]<Buffer|String>> Promise which resolves to the `png` image.
 
 This method is simply a shorthand for the `to` method.
 
 ### svg.toJpeg([options])
+
 - `options` <[Object]> Optional options object that can have the same properties as the `to` method except for the type property.
 - returns: <[Promise]<Buffer|String>> Promise which resolves to the `jpeg` image.
 
 This method is simply a shorthand for the `to` method.
 
 ### svg.toWebp([options])
+
 - `options` <[Object]> Optional options object that can have the same properties as the `to` method except for the type property.
 - returns: <[Promise]<Buffer|String>> Promise which resolves to the `webp` image.
 
@@ -161,35 +167,52 @@ This method is simply a shorthand for the `to` method.
 
 All conversion methods return a promise that rejects with an `Error` in these cases:
 
-| Case | Error |
-| --- | --- |
-| The input is not a valid SVG | message `Malformed SVG` |
-| The browser cannot be reached (`connect`) | message lists the refused addresses, `code` is `ECONNREFUSED`; the next call tries to connect again |
-| `puppeteer` is not installed, and you use `from` (which launches a local browser) | message ``NPM module `puppeteer` is not available…`` |
-| The `path` option cannot be written | the error of the file system, e.g. `ENOENT` |
+| Case                                                                              | Error                                                                                               |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| The input is not a valid SVG                                                      | message `Malformed SVG`                                                                             |
+| The browser cannot be reached (`connect`)                                         | message lists the refused addresses, `code` is `ECONNREFUSED`; the next call tries to connect again |
+| `puppeteer` is not installed, and you use `from` (which launches a local browser) | message ``NPM module `puppeteer` is not available…``                                                |
+| The `path` option cannot be written                                               | the error of the file system, e.g. `ENOENT`                                                         |
 
 Errors of the browser itself (e.g. the browser crashes during the conversion) are passed on unchanged.
 
 ## Built with
 
-* [node.js](https://nodejs.org/en/) - Cross-platform JavaScript run-time environment for executing JavaScript code server-side. 
-* [Puppeteer](https://github.com/GoogleChrome/puppeteer/) - Headless Chrome Node API.
-* [TypeScript](https://www.typescriptlang.org/) - Typed superset of JavaScript that compiles to plain JavaScript.
-* [Jest](https://facebook.github.io/jest/) - Delightful JavaScript Testing.
+- [node.js](https://nodejs.org/en/) - Cross-platform JavaScript run-time environment for executing JavaScript code server-side.
+- [Puppeteer](https://github.com/GoogleChrome/puppeteer/) - Headless Chrome Node API.
+- [TypeScript](https://www.typescriptlang.org/) - Typed superset of JavaScript that compiles to plain JavaScript.
+- [Vitest](https://vitest.dev/) - Next generation testing framework.
+
+## Development
+
+The toolchain is pinned: pnpm by `packageManager`, Node by `.node-version`.
+
+```bash
+pnpm install
+pnpm run lint     # ESLint, Prettier, the type check, and Knip
+pnpm test         # needs Chrome, which the install of `puppeteer` downloads
+pnpm run build
+```
+
+### Releasing
+
+1. In `changelog.md`, move the entries under `## [Unreleased]` to a new `## [X.Y.Z] - YYYY-MM-DD` section below it (a plain hyphen; the empty `## [Unreleased]` heading stays), add an `[X.Y.Z]` link comparing the previous version with `vX.Y.Z`, point the `[unreleased]` link at `vX.Y.Z...HEAD`, and commit
+2. `pnpm version <patch|minor|major>` makes the release commit and tag, and pushes both. It stops first when the changelog is not ready: [changelog-keeper](https://github.com/qqilihq/changelog-keeper) checks it after the version bump (the only point at which the new version is known), says which lines to write, and undoes the bump. It never modifies the changelog
+3. The tag starts the publish workflow, which publishes to npm and creates the GitHub release
 
 ## Contributing
 
 When contributing to this project, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
 
-Update the [README.md](https://github.com/etienne-martin/svg-to-img/blob/master/README.md) with details of changes to the library.
+Update the [readme](https://github.com/NodePit/svg-to-img/blob/master/readme.md) with details of changes to the library.
 
-Execute `pnpm run test` and update the [tests](https://github.com/etienne-martin/svg-to-img/tree/master/src/tests) if needed.
+Execute `pnpm run test` and update the [tests](https://github.com/NodePit/svg-to-img/tree/master/src/tests) if needed.
 
 ## Authors
 
-* **Etienne Martin** - *Initial work* - [etiennemartin.ca](http://etiennemartin.ca/)
-* **Philipp Katz** - *Connect to browser endpoint* - [gitlab.com/qqilihq](https://gitlab.com/qqilihq)
+- **Etienne Martin** - _Initial work_ - [etiennemartin.ca](http://etiennemartin.ca/)
+- **Philipp Katz** - _Connect to browser endpoint_ - [gitlab.com/qqilihq](https://gitlab.com/qqilihq)
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/etienne-martin/svg-to-img/blob/master/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/NodePit/svg-to-img/blob/master/LICENSE) file for details.

@@ -3,18 +3,21 @@
     "module": "commonjs",
     "target": "es2023",
     "strict": true,
+    "noImplicitOverride": true,
+    // "exactOptionalPropertyTypes": true,  /* Recommended for greenfield projects. */
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowJs": true /* `eslint.config.mjs` is in `include`. */,
+    "checkJs": true /* otherwise the above only parses it. */,
     "declaration": true,
-    "noImplicitAny": true,
+    "noEmit": true,
     "outDir": "./dist",
-    "lib": [
-      "dom",
-      "es2023"
-    ]
+    // `renderSvg` runs in the browser, so `dom` is needed besides Node
+    "lib": ["dom", "es2023"],
+    "types": ["node"]
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "src/tests"
-  ]
+  "include": ["src", "eslint.config.mjs", "vitest.config.mts"]
 }
