@@ -37,12 +37,10 @@ export class BrowserSource {
   public async getBrowser(): Promise<puppeteer.Browser> {
     this.conversions++;
     return new Promise((resolve: (result: puppeteer.Browser) => void, reject: (err: unknown) => void) => {
-      /* istanbul ignore if */
       if (this.browserDestructionTimeout) {
         clearTimeout(this.browserDestructionTimeout);
       }
 
-      /* istanbul ignore else */
       if (this.browserState === "closed") {
         // Browser is closed
         this.queue.push({ resolve, reject });
@@ -75,19 +73,14 @@ export class BrowserSource {
         return;
       }
 
-      /* istanbul ignore next */
       if (this.browserState === "opening") {
         // Queue request and wait for the browser to open
-        return this.queue.push({ resolve, reject });
+        this.queue.push({ resolve, reject });
+        return;
       }
 
-      /* istanbul ignore next */
-      if (this.browserState === "open") {
-        // Browser is already open
-        if (this.browserInstance) {
-          return resolve(this.browserInstance);
-        }
-      }
+      // Browser is already open, and an open browser always has an instance
+      resolve(this.browserInstance!);
     });
   }
 
@@ -102,7 +95,6 @@ export class BrowserSource {
     }
     this.browserDestructionTimeout = global.setTimeout(() => {
       const browser = this.browserInstance;
-      /* istanbul ignore next */
       if (browser) {
         this.browserInstance = undefined;
         this.browserState = "closed";
@@ -238,7 +230,6 @@ async function withTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> 
 
 // Puppeteer 25 rejects a failed connection with an `ErrorEvent` wrapping Node's `AggregateError` (one error per
 // resolved address), which has an empty message
-/* istanbul ignore next */
 function unwrapConnectionError(error: unknown) {
   const cause = (error as { error?: unknown } | undefined)?.error ?? error;
   const { message, errors, code } = cause as { message?: string; errors?: Error[]; code?: string };
@@ -260,7 +251,7 @@ const defaultBrowserSource = new BrowserSource(async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     puppeteerFull = require("puppeteer") as typeof PuppeteerFull;
   } catch {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     throw new Error(
       "NPM module `puppeteer` is not available. Either add it as " +
         " dependency to your project, or use the `connect` function and supply " +
@@ -275,7 +266,6 @@ export function from(svg: Buffer | string) {
   return new SvgToImg(defaultBrowserSource).from(svg);
 }
 
-/* istanbul ignore next */
 export function connect(options: IConnectOptions) {
   return new SvgToImg(
     new BrowserSource(
