@@ -299,6 +299,15 @@ describe("SVG to image conversion", () => {
       fail();
     }
   });
+
+  test("SVG with text which looks like code", async () => {
+    // a backtick broke the code which runs in the browser, and a `${…}` ran in it
+    const data = await svgToImg
+      .from("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><text>`a` ${notDefined} ä</text></svg>")
+      .toPng();
+
+    expect(sizeOf(data)).toEqual({ type: "png", width: 10, height: 10 });
+  });
 });
 
 // Kill any remaining Chromium instances

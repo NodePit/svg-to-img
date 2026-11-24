@@ -24,7 +24,14 @@ describe("Helper functions", () => {
   test("Stringify function", async () => {
     const func = stringifyFunction((str: string, obj: object, num: number) => str + obj + num, "a", { a: 1 }, 1);
 
-    expect(func).toEqual(`((str, obj, num) => str + obj + num)(\`a\`,{"a":1},1)`);
+    expect(func).toEqual(`((str, obj, num) => str + obj + num)("a",{"a":1},1)`);
+  });
+
+  test("Stringify function with a string which looks like code", async () => {
+    const text = "`a` ${notDefined} \"b\" 'c' \\n \u2028 äöü";
+    const func = stringifyFunction((str: string) => str, text);
+
+    expect(eval(func)).toBe(text);
   });
 
   test("Render SVG with all options", async () => {

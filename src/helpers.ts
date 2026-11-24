@@ -13,9 +13,8 @@ export const stringifyFunction = (func: Function, ...argsArray: (string | object
 
   for (const argument of argsArray) {
     switch (typeof argument) {
+      // a string as JSON too, so that a backtick or `${…}` in it (e.g. in the text of an SVG) is not read as code
       case "string":
-        args.push("`" + argument + "`");
-        break;
       case "object":
         args.push(JSON.stringify(argument));
         break;
