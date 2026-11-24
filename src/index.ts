@@ -22,7 +22,7 @@ export class BrowserSource {
 
   /**
    * @param factory opens a browser when a conversion needs one
-   * @param release lets go of the browser once it was idle for 500 ms; closes it by default. A rejection is ignored
+   * @param release lets go of the browser once it was idle for 500 ms; closes it by default
    */
   constructor(
     private readonly factory: () => Promise<puppeteer.Browser>,
@@ -102,8 +102,7 @@ export class BrowserSource {
       if (browser) {
         this.browserInstance = undefined;
         this.browserState = "closed";
-        // nobody waits for the release, so a rejection would end the process as an unhandled one
-        this.release(browser).catch(() => {});
+        void this.release(browser);
       }
     }, 500);
   }
