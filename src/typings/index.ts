@@ -24,5 +24,9 @@ export interface IShorthandOptions extends IOptions {
 export interface IConnectOptions {
   browserWSEndpoint?: string;
   browserURL?: string;
+  /**
+   * @deprecated Has no effect: Puppeteer 25 does not know this option. The SVG is rendered offline, from a data URL, so
+   * no HTTPS errors occur either.
+   */
   ignoreHTTPSErrors?: boolean;
 }
