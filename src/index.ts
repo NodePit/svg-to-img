@@ -12,10 +12,17 @@ export class BrowserSource {
   private browserDestructionTimeout: NodeJS.Timeout | undefined;
   private browserInstance: puppeteer.Browser | undefined;
   private browserState: "closed" | "opening" | "open" = "closed";
+  // conversions which called `getBrowser` and not yet `scheduleBrowserForDestruction`; the idle close waits for all
+  private conversions = 0;
 
   constructor(private readonly factory: () => Promise<puppeteer.Browser>) {}
 
+  /**
+   * Returns the browser, and opens it if none is open. Call `scheduleBrowserForDestruction` once for every call of
+   * `getBrowser`, also when using the browser failed: the browser is closed only 500 ms after the last of these calls.
+   */
   public async getBrowser(): Promise<puppeteer.Browser> {
+    this.conversions++;
     return new Promise((resolve: (result: puppeteer.Browser) => void, reject: (err: unknown) => void) => {
       /* istanbul ignore if */
       if (this.browserDestructionTimeout) {
@@ -68,10 +75,14 @@ export class BrowserSource {
     });
   }
 
+  /**
+   * Lets go of a browser returned by `getBrowser`. When no other caller still uses it, the browser is closed after 500 ms,
+   * unless `getBrowser` is called again before.
+   */
   public scheduleBrowserForDestruction() {
-    /* istanbul ignore if */
-    if (this.browserDestructionTimeout) {
-      clearTimeout(this.browserDestructionTimeout);
+    this.conversions--;
+    if (this.conversions > 0) {
+      return;
     }
     this.browserDestructionTimeout = global.setTimeout(() => {
       const browser = this.browserInstance;
@@ -132,12 +143,6 @@ export class Svg {
   private async convertSvg(inputSvg: Buffer | string, passedOptions: IOptions, browserSource: BrowserSource): Promise<Buffer | string> {
     const svg = Buffer.isBuffer(inputSvg) ? inputSvg.toString("utf8") : inputSvg;
     const options = { ...defaultOptions, ...passedOptions };
-    const browser = await browserSource.getBrowser();
-    // A browser reached with `connect` can have no page open
-    const page = (await browser.pages())[0] ?? (await browser.newPage());
-
-    // ⚠️ Offline mode is enabled to prevent any HTTP requests over the network
-    await page.setOfflineMode(true);
 
     // Infer the file type from the file path if no type is provided
     if (!passedOptions.type && options.path) {
@@ -148,19 +153,30 @@ export class Svg {
       }
     }
 
-    const base64 = (await page.evaluate(
-      stringifyFunction(renderSvg, svg, {
-        width: options.width,
-        height: options.height,
-        type: options.type,
-        quality: options.quality,
-        background: options.background,
-        clip: options.clip,
-        jpegBackground: config.jpegBackground
-      })
-    )) as string;
+    let base64: string;
+    try {
+      const browser = await browserSource.getBrowser();
+      // A browser reached with `connect` can have no page open
+      const page = (await browser.pages())[0] ?? (await browser.newPage());
 
-    browserSource.scheduleBrowserForDestruction();
+      // ⚠️ Offline mode is enabled to prevent any HTTP requests over the network
+      await page.setOfflineMode(true);
+
+      base64 = (await page.evaluate(
+        stringifyFunction(renderSvg, svg, {
+          width: options.width,
+          height: options.height,
+          type: options.type,
+          quality: options.quality,
+          background: options.background,
+          clip: options.clip,
+          jpegBackground: config.jpegBackground
+        })
+      )) as string;
+    } finally {
+      // also after a failed conversion: an open browser keeps the process from exiting
+      browserSource.scheduleBrowserForDestruction();
+    }
 
     const buffer = Buffer.from(base64, "base64");
 
