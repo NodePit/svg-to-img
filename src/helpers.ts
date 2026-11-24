@@ -1,15 +1,16 @@
-import * as fs from "fs";
+import * as fs from "node:fs";
 import { IBoundingBox, IOptions } from "./typings";
 
 export const getFileTypeFromPath = (path: string) => {
-  return path.toLowerCase().replace(new RegExp("jpg", "g"), "jpeg").split(".").reverse()[0];
+  const normalized = path.toLowerCase().replace(/jpg/g, "jpeg");
+  return normalized.slice(normalized.lastIndexOf(".") + 1);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const stringifyFunction = (func: Function, ...argsArray: (string | object | number)[]) => {
   // Remove istanbul coverage instruments
   const functionString = func.toString().replace(/cov_(.+?)\+\+[,;]?/g, "");
-  const args: Array<string | object | number> = [];
+  const args: Array<string | number> = [];
 
   for (const argument of argsArray) {
     switch (typeof argument) {

@@ -1,6 +1,7 @@
 /// <reference types="node" preserve="true" />
 // puppeteer-core is ESM-only: the resolution mode lets the CJS declarations import it under node16 resolution
 import type * as puppeteer from "puppeteer-core" with { "resolution-mode": "import" };
+import type * as PuppeteerFull from "puppeteer" with { "resolution-mode": "import" };
 import { getFileTypeFromPath, renderSvg, stringifyFunction, writeFileAsync } from "./helpers";
 import { config, defaultOptions, defaultPngShorthandOptions, defaultJpegShorthandOptions, defaultWebpShorthandOptions } from "./constants";
 import { IBoundingBox, IOptions, IShorthandOptions, IConnectOptions } from "./typings";
@@ -32,8 +33,10 @@ export class BrowserSource {
 
             this.executeQueuedRequests(this.browserInstance);
           })
-          .catch((error) => {
+          .catch((error: unknown) => {
             this.browserState = "closed";
+            // passes on what Puppeteer rejected with, which is not necessarily an Error
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(unwrapConnectionError(error));
           });
 
@@ -61,11 +64,11 @@ export class BrowserSource {
     if (this.browserDestructionTimeout) {
       clearTimeout(this.browserDestructionTimeout);
     }
-    this.browserDestructionTimeout = global.setTimeout(async () => {
+    this.browserDestructionTimeout = global.setTimeout(() => {
       /* istanbul ignore next */
       if (this.browserInstance) {
         this.browserState = "closed";
-        await this.browserInstance.close();
+        void this.browserInstance.close();
       }
     }, 500);
   }
@@ -116,7 +119,7 @@ export class Svg {
   ): Promise<Buffer>;
   private async convertSvg(inputSvg: Buffer | string, passedOptions: IOptions, browserSource: BrowserSource): Promise<string>;
   private async convertSvg(inputSvg: Buffer | string, passedOptions: IOptions, browserSource: BrowserSource): Promise<Buffer | string> {
-    const svg = Buffer.isBuffer(inputSvg) ? (inputSvg as Buffer).toString("utf8") : inputSvg;
+    const svg = Buffer.isBuffer(inputSvg) ? inputSvg.toString("utf8") : inputSvg;
     const options = { ...defaultOptions, ...passedOptions };
     const browser = await browserSource.getBrowser();
     // A browser reached with `connect` can have no page open
@@ -184,11 +187,11 @@ export class SvgToImg {
 }
 
 const defaultBrowserSource = new BrowserSource(async () => {
+  let puppeteerFull: typeof PuppeteerFull;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
-    const puppeteerFull = require("puppeteer");
-
-    return puppeteerFull.launch(config.puppeteer);
+    // `puppeteer` is an optional peer dependency, so it is loaded only once a conversion needs it
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    puppeteerFull = require("puppeteer") as typeof PuppeteerFull;
   } catch {
     /* istanbul ignore next */
     throw new Error(
@@ -197,6 +200,8 @@ const defaultBrowserSource = new BrowserSource(async () => {
         "`browserWSEndpoint` if you want to use a running Puppeteer endpoint."
     );
   }
+
+  return await puppeteerFull.launch(config.puppeteer);
 });
 
 export const from = (svg: Buffer | string) => {

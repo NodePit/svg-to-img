@@ -155,13 +155,11 @@ describe("SVG to image conversion", () => {
   });
 
   test("Malformed SVG", async () => {
-    try {
-      await svgToImg.from("THIS IS NO SVG").to({
+    await expect(
+      svgToImg.from("THIS IS NO SVG").to({
         type: "png"
-      });
-    } catch (error) {
-      expect((error as Error).message).toContain("Malformed SVG");
-    }
+      })
+    ).rejects.toThrow("Malformed SVG");
   });
 
   test("Responsive SVG (Infer natural dimensions)", async () => {
@@ -248,12 +246,12 @@ describe("SVG to image conversion", () => {
   });
 
   test("Wait for browser destruction", async () => {
-    await svgToImg.from(responsiveSvgBuffer).toJpeg();
+    await expect(svgToImg.from(responsiveSvgBuffer).toJpeg()).resolves.toBeInstanceOf(Buffer);
 
-    return new Promise<void>((resolve) => setTimeout(() => resolve(), 2000));
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), 2000));
   });
 
-  test("Test multiple requests in parallel", async () => {
+  test("Multiple requests in a row", async () => {
     let errors = 0;
 
     for (let i = 0; i < 10; i++) {

@@ -17,19 +17,20 @@ beforeEach(() => {
 });
 
 describe("Helper functions", () => {
-  test("Get file type from path", async () => {
-    const fileType = await getFileTypeFromPath("test.jpg");
+  test("Get file type from path", () => {
+    const fileType = getFileTypeFromPath("test.jpg");
 
     expect(fileType).toBe("jpeg");
   });
 
-  test("Stringify function", async () => {
-    const func = stringifyFunction((str: string, obj: object, num: number) => str + obj + num, "a", { a: 1 }, 1);
+  test("Stringify function", () => {
+    const func = stringifyFunction((str: string, obj: object, num: number) => [str, obj, num], "a", { a: 1 }, 1);
 
-    expect(func).toEqual(`((str, obj, num) => str + obj + num)("a",{"a":1},1)`);
+    expect(func).toMatch(/\)\("a",\{"a":1\},1\)$/);
+    expect(eval(func)).toEqual(["a", { a: 1 }, 1]);
   });
 
-  test("Stringify function with a string which looks like code", async () => {
+  test("Stringify function with a string which looks like code", () => {
     const text = "`a` ${notDefined} \"b\" 'c' \\n \u2028 äöü";
     const func = stringifyFunction((str: string) => str, text);
 
@@ -83,15 +84,13 @@ describe("Helper functions", () => {
       }
     });
 
-    try {
-      await renderSvg("THIS IS NO SVG", {
+    await expect(
+      renderSvg("THIS IS NO SVG", {
         type: "png",
         quality: 1,
         jpegBackground: config.jpegBackground
-      });
-    } catch (error) {
-      expect((error as Error).message).toContain("Malformed SVG");
-    }
+      })
+    ).rejects.toThrow("Malformed SVG");
   });
 
   test("Write file asynchronously", async () => {
