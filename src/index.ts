@@ -31,6 +31,14 @@ export class BrowserSource {
           .then((browserInstance) => {
             this.browserInstance = browserInstance;
             this.browserState = "open";
+            // A crashed or restarted browser is replaced by the next conversion. The idle close disconnects too, but it
+            // has already let go of the browser, and a next one may be open by the time the event arrives
+            browserInstance.once("disconnected", () => {
+              if (this.browserInstance === browserInstance) {
+                this.browserInstance = undefined;
+                this.browserState = "closed";
+              }
+            });
 
             this.executeQueuedRequests(this.browserInstance);
           })
@@ -66,10 +74,12 @@ export class BrowserSource {
       clearTimeout(this.browserDestructionTimeout);
     }
     this.browserDestructionTimeout = global.setTimeout(() => {
+      const browser = this.browserInstance;
       /* istanbul ignore next */
-      if (this.browserInstance) {
+      if (browser) {
+        this.browserInstance = undefined;
         this.browserState = "closed";
-        void this.browserInstance.close();
+        void browser.close();
       }
     }, 500);
   }

@@ -174,7 +174,7 @@ All conversion methods return a promise that rejects with an `Error` in these ca
 | `puppeteer` is not installed, and you use `from` (which launches a local browser) | message ``NPM module `puppeteer` is not available…``                                                |
 | The `path` option cannot be written                                               | the error of the file system, e.g. `ENOENT`                                                         |
 
-Errors of the browser itself (e.g. the browser crashes during the conversion) are passed on unchanged.
+Errors of the browser itself (e.g. the browser crashes during the conversion) are passed on unchanged. After the browser disconnected, the next call opens a new one.
 
 ## Built with
 
