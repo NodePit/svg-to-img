@@ -125,7 +125,7 @@ The method returns a svg instance based on the given argument.
 
 Use this method if you want to connect to a running Puppeteer endpoint (see [here](https://github.com/etienne-martin/svg-to-img/issues/9)). Note that the actual connection is established lazily; this means this method will always return, even when the given `browserWSEndpoint` cannot be reached -- in this case, errors will be thrown later when calling one of the `to` functions.
 
-The browser behind the endpoint should not be shared with other clients. A conversion runs in the browser's first open page, which can belong to another client, and takes that page offline while it converts. An endpoint which starts a browser for every connection, as browserless does, is not affected. 500 ms after the last conversion, the library disconnects from the browser and leaves it running.
+Each conversion renders on a page of its own, which it closes afterwards, so the pages of other clients of the browser are never touched. 500 ms after the last conversion, the library disconnects from the browser and leaves it running.
 
 ### svg.to([options])
 
@@ -142,6 +142,7 @@ The browser behind the endpoint should not be shared with other clients. A conve
     - `height` <[number]> height of clipping area
   - `background` <[string]> background color applied to the output image, must be a valid [CSS color value](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
   - `encoding` <[string]> Specify encoding, can be either `base64`, `utf8`, `binary` or `hex`. Returns a `Buffer` if this option is omitted.
+  - `timeout` <[number]> Maximum time in milliseconds to render the SVG. Defaults to `30000`. Puppeteer's own limit for a call to the browser, 180 seconds, applies as well, so a longer `timeout` (or `Infinity`) ends there. Every conversion renders on a browser page of its own, and an SVG can keep that page and a CPU core busy until the timeout: when converting SVGs from outsiders, limit how many conversions run at once.
 - returns: <[Promise]<Buffer|String>> Promise which resolves to the output image.
 
 ### svg.toPng([options])
@@ -175,6 +176,7 @@ All conversion methods return a promise that rejects with an `Error` in these ca
 | The browser cannot be reached (`connect`)                                         | message lists the refused addresses, `code` is `ECONNREFUSED`; the next call tries to connect again |
 | `puppeteer` is not installed, and you use `from` (which launches a local browser) | message ``NPM module `puppeteer` is not available…``                                                |
 | The `path` option cannot be written                                               | the error of the file system, e.g. `ENOENT`                                                         |
+| Rendering takes longer than the `timeout` option                                  | message `Rendering the SVG took longer than … ms`                                                   |
 
 Errors of the browser itself (e.g. the browser crashes during the conversion) are passed on unchanged. After the browser disconnected, the next call opens a new one.
 
