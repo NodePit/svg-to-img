@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Fixed
+* An SVG with a backtick (`` ` ``) or `${…}` in it no longer fails with `SyntaxError` or `ReferenceError`: the SVG is passed to the browser as a JSON string instead of a template literal
+
+### Security
+* The text of an SVG can no longer run as JavaScript in the browser which renders it
+
 ## [4.0.0] – 2026-10-14
 ### Changed
 * (breaking) Update to Puppeteer 25. It needs a current Chrome (tested with Chrome 156 and browserless v2); the Chrome 78 of `browserless/chrome:1.x` no longer works, use e.g. `ghcr.io/browserless/chromium` instead
