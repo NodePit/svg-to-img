@@ -288,6 +288,15 @@ describe("SVG to image conversion", () => {
     }
   });
 
+  test("Propagates error to every conversion which waited for the browser to open", async () => {
+    const convert = svgToImg.connect({ browserWSEndpoint: "ws://localhost:12345" });
+    const first = convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
+    const second = convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
+
+    await expect(first).rejects.toThrow("ECONNREFUSED");
+    await expect(second).rejects.toThrow("ECONNREFUSED");
+  }, 5_000);
+
   test("Browser without an open page", async () => {
     const browserSource = new svgToImg.BrowserSource(async () => {
       // the arguments `from` launches with, which a CI runner without a user namespace sandbox needs

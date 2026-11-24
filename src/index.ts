@@ -13,7 +13,8 @@ import { IBoundingBox, IOptions, IShorthandOptions, IConnectOptions } from "./ty
  * @internal exported for the tests only; not part of the public API, it can change in any release
  */
 export class BrowserSource {
-  private queue: Array<(result: puppeteer.Browser) => void> = [];
+  // conversions waiting for the browser to open
+  private queue: Array<{ resolve: (result: puppeteer.Browser) => void; reject: (err: unknown) => void }> = [];
   private browserDestructionTimeout: NodeJS.Timeout | undefined;
   private browserInstance: puppeteer.Browser | undefined;
   private browserState: "closed" | "opening" | "open" = "closed";
@@ -44,7 +45,7 @@ export class BrowserSource {
       /* istanbul ignore else */
       if (this.browserState === "closed") {
         // Browser is closed
-        this.queue.push(resolve);
+        this.queue.push({ resolve, reject });
         this.browserState = "opening";
         this.factory()
           .then((browserInstance) => {
@@ -64,8 +65,11 @@ export class BrowserSource {
           .catch((error: unknown) => {
             this.browserState = "closed";
             // passes on what Puppeteer rejected with, which is not necessarily an Error
-            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            reject(unwrapConnectionError(error));
+            const reason = unwrapConnectionError(error);
+            // every conversion which waited for this browser fails, not only the one which started opening it
+            for (const queued of this.queue.splice(0)) {
+              queued.reject(reason);
+            }
           });
 
         return;
@@ -74,7 +78,7 @@ export class BrowserSource {
       /* istanbul ignore next */
       if (this.browserState === "opening") {
         // Queue request and wait for the browser to open
-        return this.queue.push(resolve);
+        return this.queue.push({ resolve, reject });
       }
 
       /* istanbul ignore next */
@@ -108,7 +112,7 @@ export class BrowserSource {
   }
 
   private executeQueuedRequests(browser: puppeteer.Browser) {
-    for (const resolve of this.queue) {
+    for (const { resolve } of this.queue) {
       resolve(browser);
     }
     // Clear items from the queue
