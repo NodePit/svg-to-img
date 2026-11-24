@@ -10,8 +10,14 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        # the oldest supported Node version (engines) and the one pinned in .node-version
-        node-version: [22.12.0, 24.19.0]
+        include:
+          # the version pinned for development: lints, tests, and reports coverage
+          - name: pinned
+            node-version-file: .node-version
+          # the oldest supported version (engines.node): tests only, the lint tooling needs a newer Node
+          - name: floor
+            node-version: 22.12.0
+    name: build (${{ matrix.name }})
     steps:
       - uses: actions/checkout@v7
 
@@ -20,21 +26,22 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
+          node-version-file: ${{ matrix.node-version-file }}
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm exec puppeteer browsers install chrome
 
-      - run: pnpm run typecheck
+      - run: pnpm run lint
+        if: matrix.name == 'pinned'
 
-      # builds (and lints) in `prebuild`, tests lint again in `pretest`
       - run: pnpm run build
 
       - run: pnpm run test
 
       - uses: codecov/codecov-action@v7
-        if: matrix.node-version == '24.19.0'
+        if: matrix.name == 'pinned'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/coverage-final.json
