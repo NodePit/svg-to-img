@@ -292,6 +292,22 @@ describe("SVG to image conversion", () => {
     expect(errors).toBe(10);
   });
 
+  test("Browser without an open page", async () => {
+    const browserSource = new svgToImg.BrowserSource(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const browser = await require("puppeteer").launch();
+      for (const page of await browser.pages()) {
+        await page.close();
+      }
+      return browser;
+    });
+    const data = await new svgToImg.SvgToImg(browserSource)
+      .from("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'/>")
+      .toPng();
+
+    expect(sizeOf(data)).toEqual({ type: "png", width: 10, height: 10 });
+  });
+
   test("Special character encoding", async () => {
     try {
       await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'><text x='0' y='0'>äöüÄÖÜçéèñ</text></svg>").toPng();

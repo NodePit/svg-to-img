@@ -3,7 +3,7 @@
 import type * as puppeteer from "puppeteer-core" with { "resolution-mode": "import" };
 import { getFileTypeFromPath, renderSvg, stringifyFunction, writeFileAsync } from "./helpers";
 import { config, defaultOptions, defaultPngShorthandOptions, defaultJpegShorthandOptions, defaultWebpShorthandOptions } from "./constants";
-import { IOptions, IShorthandOptions, IConnectOptions } from "./typings";
+import { IBoundingBox, IOptions, IShorthandOptions, IConnectOptions } from "./typings";
 
 export class BrowserSource {
   private queue: Array<(result: puppeteer.Browser) => void> = [];
@@ -119,7 +119,8 @@ export class Svg {
     const svg = Buffer.isBuffer(inputSvg) ? (inputSvg as Buffer).toString("utf8") : inputSvg;
     const options = { ...defaultOptions, ...passedOptions };
     const browser = await browserSource.getBrowser();
-    const page = (await browser.pages())[0];
+    // A browser reached with `connect` can have no page open
+    const page = (await browser.pages())[0] ?? (await browser.newPage());
 
     // ⚠️ Offline mode is enabled to prevent any HTTP requests over the network
     await page.setOfflineMode(true);
@@ -213,4 +214,4 @@ export const connect = (options: IConnectOptions) => {
   );
 };
 
-export { IOptions, IShorthandOptions, IConnectOptions };
+export { IBoundingBox, IOptions, IShorthandOptions, IConnectOptions };

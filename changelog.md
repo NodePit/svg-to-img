@@ -6,10 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+* Export the TS interface `IBoundingBox`, the type of the `clip` option
+
 ### Fixed
 * An SVG with a backtick (`` ` ``) or `${…}` in it no longer fails with `SyntaxError` or `ReferenceError`: the SVG is passed to the browser as a JSON string instead of a template literal
 * A backslash in an SVG is kept as it is: it was read as the start of an escape sequence, so e.g. `\n` in a text was drawn as a line break, and a CSS escape such as `content: "\201C"` failed with `SyntaxError`
 
+* Converting with a browser that has no page open (possible with `connect`) no longer fails with `TypeError`: a page is opened
 * The usage examples in the readme import `@nodepit/svg-to-img`, not the unscoped `svg-to-img` (the original library this one is forked from)
 
 ### Security
