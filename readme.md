@@ -1,170 +1,103 @@
 # svg-to-img
 
-#### A node.js library to convert SVGs to images built with [Puppeteer](https://github.com/GoogleChrome/puppeteer).
+A Node.js library to convert SVGs to PNG, JPEG and WebP images, built with [Puppeteer](https://github.com/puppeteer/puppeteer).
 
-**NOTE:** This is a fork from Etienne Martin’s <a href="https://github.com/etienne-martin/svg-to-img">svg-to-img</a> which adds the possibility to connect to a Puppeteer endpoint (see <a href="https://github.com/etienne-martin/svg-to-img/pull/19">here</a>).
-
-<!-- [![Coveralls github](https://img.shields.io/coveralls/github/etienne-martin/svg-to-img.svg)](https://coveralls.io/github/etienne-martin/svg-to-img) -->
-<!-- [![CircleCI build](https://img.shields.io/circleci/project/github/RedSparr0w/node-csgo-parser.svg)](https://circleci.com/gh/etienne-martin/svg-to-img) -->
+This is a fork of Etienne Martin’s [svg-to-img](https://github.com/etienne-martin/svg-to-img). It can [connect to a running browser](#svgtoimgconnectoptions) instead of launching one, and fixes a number of issues of the original library (see the [changelog](https://github.com/NodePit/svg-to-img/blob/master/changelog.md)).
 
 [![node version](https://img.shields.io/node/v/%40nodepit%2Fsvg-to-img.svg)](https://www.npmjs.com/package/%40nodepit%2Fsvg-to-img)
 [![npm version](https://img.shields.io/npm/v/%40nodepit%2Fsvg-to-img.svg)](https://www.npmjs.com/package/%40nodepit%2Fsvg-to-img)
 [![npm monthly downloads](https://img.shields.io/npm/dm/%40nodepit%2Fsvg-to-img.svg)](https://www.npmjs.com/package/%40nodepit%2Fsvg-to-img)
 
-## Getting Started
+## Getting started
+
+### Requirements
+
+- Node.js 22.12 or later
+- A Chrome recent enough for Puppeteer 25. Chrome 78, as shipped in `browserless/chrome:1.x`, is too old; use e.g. `ghcr.io/browserless/chromium`
 
 ### Installation
-
-To use svg-to-img in your project, run:
 
 ```bash
 npm install @nodepit/svg-to-img
 ```
 
-Starting from v4.0.0, svg-to-img requires Node 22.12 or later and Puppeteer 25, which in turn needs a recent Chrome (it does not work with Chrome 78, as shipped in `browserless/chrome:1.x`; use e.g. `ghcr.io/browserless/chromium`).
-
-Starting from v3.0.0, Chromium will **no longer** automatically be downloaded when installing this dependency (instead of depending on `puppetteer`, the library now depends on `puppeteer-core`; see [here](https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#puppeteer-vs-puppeteer-core)). We assume that you either have an existing local or remote Chromium, or that you explicitly install `puppeteer` within your project to to have Chromium downloaded.
-
-#### Debian
-
-If you're planning on running svg-to-img on Debian, you will need to manually install the following dependencies:
+The library depends on `puppeteer-core`, which does not download a browser. To convert with `from`, which launches a local Chrome, also install `puppeteer`, which downloads one:
 
 ```bash
-#!/bin/bash
-
-apt-get update
-apt-get install -yq gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
-  libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 \
-  libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
-  libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 \
-  ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
+npm install puppeteer
 ```
+
+To use a browser which runs elsewhere, use `connect` instead.
+
+If Chrome does not start on Linux, it is probably missing system libraries. Puppeteer’s [troubleshooting guide](https://pptr.dev/troubleshooting) lists them.
 
 ### Usage
 
-**Example** - converting a `svg` to `png`:
-
 ```javascript
-const svgToImg = require("@nodepit/svg-to-img");
+import * as svgToImg from "@nodepit/svg-to-img";
 
-(async () => {
-  const image = await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
+const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'/>";
 
-  console.log(image);
-})();
+// a PNG as a Buffer
+const png = await svgToImg.from(svg).toPng();
+
+// a JPEG saved as example.jpeg
+await svgToImg.from(svg).toJpeg({ path: "./example.jpeg" });
+
+// a WebP 300 pixels wide; the height scales proportionally
+const webp = await svgToImg.from(svg).toWebp({ width: 300 });
+
+// a PNG as a base64 string
+const base64 = await svgToImg.from(svg).toPng({ encoding: "base64" });
 ```
 
-**Example** - converting a `svg` to `jpeg` and saving the image as _example.jpeg_:
+To convert with a browser which runs elsewhere, e.g. in a Docker container, connect to it:
 
 ```javascript
-const svgToImg = require("@nodepit/svg-to-img");
+const converter = svgToImg.connect({ browserWSEndpoint: "ws://localhost:3000" });
 
-(async () => {
-  await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toJpeg({
-    path: "./example.jpeg"
-  });
-})();
+const image = await converter.from(svg).toPng();
 ```
 
-**Example** - resizing a `svg` proportionally and converting it to `webp`:
-
-```javascript
-const svgToImg = require("@nodepit/svg-to-img");
-
-(async () => {
-  const image = await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toWebp({
-    width: 300
-  });
-
-  console.log(image);
-})();
-```
-
-**Example** - converting a `svg` to base64-encoded png:
-
-```javascript
-const svgToImg = require("@nodepit/svg-to-img");
-
-(async () => {
-  const image = await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng({
-    encoding: "base64"
-  });
-
-  console.log(image);
-})();
-```
-
-**Example** - connect to Puppeteer `browserWSEndpoint`:
-
-```javascript
-const svgToImg = require("@nodepit/svg-to-img");
-const convert = svgToImg.connect({
-  browserWSEndpoint: "ws://localhost:3000"
-});
-
-(async () => {
-  const image = await convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
-
-  console.log(image);
-})();
-```
-
-## API Documentation
+## API
 
 ### svgToImg.from(svg)
 
-- `svg` <Buffer|string> SVG markup to be converted.
-- returns: <[Svg]> a new Svg object.
+- `svg` (`Buffer | string`): The SVG markup to convert.
+- returns `Svg`, whose methods below convert it.
 
-The method returns a svg instance based on the given argument.
+The first conversion launches a local Chrome with `puppeteer`, and the library closes it 500 ms after the last conversion.
 
 ### svgToImg.connect(options)
 
-- `options` <[Object]> Puppeteer [connect options](https://github.com/puppeteer/puppeteer/blob/master/docs/api.md#puppeteerconnectoptions) object which will typically contain a `browserWSEndpoint` property.
-- returns: <[SvgToImg]> an instance which is connected with the specified Puppeteer endpoint.
+- `options` (`object`): Where to find the browser, with one of these properties:
+  - `browserWSEndpoint` (`string`): The WebSocket URL of the browser, e.g. `ws://localhost:3000`.
+  - `browserURL` (`string`): The HTTP URL of the browser’s remote debugging port, e.g. `http://localhost:9222`.
+- returns `SvgToImg`, whose `from` method works like `svgToImg.from`.
 
-Use this method if you want to connect to a running Puppeteer endpoint (see [here](https://github.com/etienne-martin/svg-to-img/issues/9)). Note that the actual connection is established lazily; this means this method will always return, even when the given `browserWSEndpoint` cannot be reached -- in this case, errors will be thrown later when calling one of the `to` functions.
+The connection opens on the first conversion, so `connect` returns even when the browser cannot be reached; the conversion fails then (see [Errors](#errors)).
 
-Each conversion renders on a page of its own, which it closes afterwards, so the pages of other clients of the browser are never touched. 500 ms after the last conversion, the library disconnects from the browser and leaves it running.
+Each conversion renders on a page of its own and closes it afterwards, so the pages of other clients of the browser are never touched. 500 ms after the last conversion, the library disconnects from the browser and leaves it running.
 
-### svg.to([options])
+### svg.to(options)
 
-- `options` <[Object]> Options object which might have the following properties:
-  - `path` <[string]> The file path to save the image to. The image type will be inferred from file extension. If `path` is a relative path, then it is resolved relative to [current working directory](https://nodejs.org/api/process.html#process_process_cwd). If no path is provided, the image won't be saved to the disk.
-  - `type` <[string]> Specify image type, can be either `png`, `jpeg` or `webp`. Defaults to `png`.
-  - `quality` <[number]> The quality of the image, between 0-1. Defaults to `1`. Not applicable to `png` images.
-  - `width` <[number]> width of the output image. Defaults to the natural width of the SVG.
-  - `height` <[number]> height of the output image. Defaults to the natural height of the SVG.
-  - `clip` <[Object]> An object which specifies clipping region of the output image. Should have the following fields:
-    - `x` <[number]> x-coordinate of top-left corner of clip area
-    - `y` <[number]> y-coordinate of top-left corner of clip area
-    - `width` <[number]> width of clipping area
-    - `height` <[number]> height of clipping area
-  - `background` <[string]> background color applied to the output image, must be a valid [CSS color value](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
-  - `encoding` <[string]> Specify encoding, can be either `base64`, `utf8`, `binary` or `hex`. Returns a `Buffer` if this option is omitted.
-  - `timeout` <[number]> Maximum time in milliseconds to render the SVG. Defaults to `30000`. Puppeteer's own limit for a call to the browser, 180 seconds, applies as well, so a longer `timeout` (or `Infinity`) ends there. Every conversion renders on a browser page of its own, and an SVG can keep that page and a CPU core busy until the timeout: when converting SVGs from outsiders, limit how many conversions run at once.
-- returns: <[Promise]<Buffer|String>> Promise which resolves to the output image.
+- `options` (`object`):
+  - `type` (`"png" | "jpeg" | "webp"`): The image type. Defaults to `"png"`, or to the extension of `path`.
+  - `path` (`string`): The file to save the image to, relative to the current working directory. Without `path`, the image is not saved.
+  - `quality` (`number`): The quality of a JPEG or WebP image, between 0 and 1. Defaults to `1`.
+  - `width` (`number`): The width of the image. Defaults to the width of the SVG, or scales proportionally to `height`.
+  - `height` (`number`): The height of the image. Defaults to the height of the SVG, or scales proportionally to `width`.
+  - `clip` (`object`): The region of the image to keep, with the `x` and `y` of its top-left corner, its `width` and its `height`.
+  - `background` (`string`): The background color, as a [CSS color](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value). JPEG images default to white.
+  - `encoding` (`"base64" | "utf8" | "binary" | "hex"`): Returns the image as a string in this encoding instead of a `Buffer`.
+  - `timeout` (`number`): The maximum time in milliseconds to render the SVG. Defaults to `30000`. Puppeteer’s own limit of 180 seconds applies as well, so a longer `timeout`, or `Infinity`, ends there.
+- returns `Promise<Buffer | string>`: The image.
 
-### svg.toPng([options])
+When converting SVGs from untrusted sources, limit how many conversions run at once: an SVG can keep its browser page and a CPU core busy until the timeout.
 
-- `options` <[Object]> Optional options object that can have the same properties as the `to` method except for the type property.
-- returns: <[Promise]<Buffer|String>> Promise which resolves to the `png` image.
+### svg.toPng([options]), svg.toJpeg([options]), svg.toWebp([options])
 
-This method is simply a shorthand for the `to` method.
-
-### svg.toJpeg([options])
-
-- `options` <[Object]> Optional options object that can have the same properties as the `to` method except for the type property.
-- returns: <[Promise]<Buffer|String>> Promise which resolves to the `jpeg` image.
-
-This method is simply a shorthand for the `to` method.
-
-### svg.toWebp([options])
-
-- `options` <[Object]> Optional options object that can have the same properties as the `to` method except for the type property.
-- returns: <[Promise]<Buffer|String>> Promise which resolves to the `webp` image.
-
-This method is simply a shorthand for the `to` method.
+Shorthands for `to` with the `type` set. The `options` are those of `to`, except `type`.
 
 ### Errors
 
@@ -180,43 +113,30 @@ All conversion methods return a promise that rejects with an `Error` in these ca
 
 Errors of the browser itself (e.g. the browser crashes during the conversion) are passed on unchanged. After the browser disconnected, the next call opens a new one.
 
-## Built with
+## Contributing
 
-- [node.js](https://nodejs.org/en/) - Cross-platform JavaScript run-time environment for executing JavaScript code server-side.
-- [Puppeteer](https://github.com/GoogleChrome/puppeteer/) - Headless Chrome Node API.
-- [TypeScript](https://www.typescriptlang.org/) - Typed superset of JavaScript that compiles to plain JavaScript.
-- [Vitest](https://vitest.dev/) - Next generation testing framework.
+Please discuss a change in an issue before you make it. Update the readme and the tests along with the code, and add the change to `changelog.md` under `## [Unreleased]`.
 
-## Development
-
-The toolchain is pinned: pnpm by `packageManager`, Node by `.node-version`.
+The toolchain is pinned: pnpm by `packageManager`, Node.js by `.node-version`.
 
 ```bash
 pnpm install
-pnpm run lint     # ESLint, Prettier, the type check, and Knip
+pnpm run lint     # ESLint, Prettier, the type check, Knip, and the changelog
 pnpm test         # needs Chrome, which the install of `puppeteer` downloads
 pnpm run build
 ```
 
 ### Releasing
 
-1. In `changelog.md`, move the entries under `## [Unreleased]` to a new `## [X.Y.Z] - YYYY-MM-DD` section below it (a plain hyphen; the empty `## [Unreleased]` heading stays), add an `[X.Y.Z]` link comparing the previous version with `vX.Y.Z`, point the `[unreleased]` link at `vX.Y.Z...HEAD`, and commit
-2. `pnpm version <patch|minor|major>` makes the release commit and tag, and pushes both. It stops first when the changelog is not ready: [changelog-keeper](https://github.com/qqilihq/changelog-keeper) checks it after the version bump (the only point at which the new version is known), says which lines to write, and undoes the bump. It never modifies the changelog
-3. The tag starts the publish workflow, which publishes to npm and creates the GitHub release
-
-## Contributing
-
-When contributing to this project, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
-
-Update the [readme](https://github.com/NodePit/svg-to-img/blob/master/readme.md) with details of changes to the library.
-
-Execute `pnpm run test` and update the [tests](https://github.com/NodePit/svg-to-img/tree/master/src/tests) if needed.
+1. In `changelog.md`, move the entries under `## [Unreleased]` to a new `## [X.Y.Z] - YYYY-MM-DD` section below it. The date follows a plain hyphen, and the empty `## [Unreleased]` heading stays. Add an `[X.Y.Z]` link comparing the previous version with `vX.Y.Z`, point the `[unreleased]` link at `vX.Y.Z...HEAD`, and commit.
+2. Run `pnpm version <patch|minor|major>`, which makes the release commit and tag, and pushes both. If the changelog is not ready, [changelog-keeper](https://github.com/qqilihq/changelog-keeper) says which lines to write and the bump is undone. It checks after the version bump, the only point at which the new version is known, and never modifies the changelog.
+3. The tag starts the publish workflow, which publishes to npm and creates the GitHub release.
 
 ## Authors
 
-- **Etienne Martin** - _Initial work_ - [etiennemartin.ca](http://etiennemartin.ca/)
-- **Philipp Katz** - _Connect to browser endpoint_ - [gitlab.com/qqilihq](https://gitlab.com/qqilihq)
+- **Etienne Martin** ([etiennemartin.ca](http://etiennemartin.ca/)): the original library
+- **Philipp Katz** ([gitlab.com/qqilihq](https://gitlab.com/qqilihq)): this fork
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/NodePit/svg-to-img/blob/master/LICENSE) file for details.
+MIT, see [LICENSE](https://github.com/NodePit/svg-to-img/blob/master/LICENSE).
