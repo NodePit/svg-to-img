@@ -125,6 +125,8 @@ The method returns a svg instance based on the given argument.
 
 Use this method if you want to connect to a running Puppeteer endpoint (see [here](https://github.com/etienne-martin/svg-to-img/issues/9)). Note that the actual connection is established lazily; this means this method will always return, even when the given `browserWSEndpoint` cannot be reached -- in this case, errors will be thrown later when calling one of the `to` functions.
 
+The browser behind the endpoint should not be shared with other clients. A conversion runs in the browser's first open page, which can belong to another client, and takes that page offline while it converts. An endpoint which starts a browser for every connection, as browserless does, is not affected. 500 ms after the last conversion, the library disconnects from the browser and leaves it running.
+
 ### svg.to([options])
 
 - `options` <[Object]> Options object which might have the following properties:
