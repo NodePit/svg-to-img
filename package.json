@@ -34,17 +34,20 @@
   "scripts": {
     "dev": "tsc -p tsconfig.build.json --pretty --watch",
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
-    "lint": "pnpm run lint:eslint && pnpm run lint:format && pnpm run lint:types && pnpm run lint:knip",
+    "lint": "pnpm run lint:eslint && pnpm run lint:format && pnpm run lint:types && pnpm run lint:knip && pnpm run lint:changelog",
     "lint:eslint": "eslint .",
     "lint:format": "prettier --check .",
     "lint:types": "tsc --noEmit",
     "lint:knip": "knip",
+    "lint:changelog": "changelog-keeper lint --section-types Added,Changed,Deprecated,Removed,Fixed,Security,Breaking",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "prebuild": "pnpm run clean",
     "build": "tsc -p tsconfig.build.json --pretty",
     "prepare": "pnpm run build && husky",
     "prepublishOnly": "pnpm run lint && pnpm test",
+    "preversion": "pnpm run lint",
+    "version": "changelog-keeper verify --section-types Added,Changed,Deprecated,Removed,Fixed,Security,Breaking || (git checkout -- package.json && exit 1)",
     "postversion": "git push --follow-tags"
   },
   "repository": {
@@ -60,6 +63,7 @@
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@qqilihq/changelog-keeper": "0.1.0-beta.3",
     "@types/node": "~22.12.0",
     "@types/pngjs": "^6.0.5",
     "@vitest/coverage-v8": "^5.1.1",

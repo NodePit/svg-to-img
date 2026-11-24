@@ -173,6 +173,9 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))
+      '@qqilihq/changelog-keeper':
+        specifier: 0.1.0-beta.3
+        version: 0.1.0-beta.3
       '@types/node':
         specifier: ~22.12.0
         version: 22.12.0
@@ -675,6 +678,11 @@ packages:
         optional: true
       yauzl:
         optional: true
+
+  '@qqilihq/changelog-keeper@0.1.0-beta.3':
+    resolution: {integrity: sha512-b/1/qyftTr0MwSKLUb/0gEkgw8HOpJoElsRSyOMe0vMeXKW1we2CNNMx3EfF1H1mStbtkJHvz77OrG0s4f9WLg==}
+    engines: {node: '>=22.12'}
+    hasBin: true
 
   '@rolldown/binding-android-arm-eabi@1.2.19':
     resolution: {integrity: sha512-e+Ebe0WT+9tbXmNKPIiC8YrWAHYwug3m6i4p3rZGGulfZri1jtI4HslT+OZnFf/OIHowWF71DTlHwXBP2SiA7A==}
@@ -1391,6 +1399,11 @@ packages:
 
   magicast@0.5.5:
     resolution: {integrity: sha512-UicdXN8zQ3JHlxVq+28afMXPr1z7WNY6+7EJnzTdQWkTAlMLF5fNCCKxJHBQwGaNGR11581EiQmQzx73+MvszA==}
+
+  marked@18.2.1:
+    resolution: {integrity: sha512-ii4bxCTCqqwpT86XZWgJNs+ZnAIZksmLGYMViWA7PDIXYIeNo1x6cDdX3JOip9NM/cI6p8z57FxliACboTruMA==}
+    engines: {node: '>= 20'}
+    hasBin: true
 
   mdn-data@2.27.1:
     resolution: {integrity: sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==}
@@ -2142,6 +2155,11 @@ snapshots:
       modern-tar: 0.8.5
       yargs: 18.2.0
 
+  '@qqilihq/changelog-keeper@0.1.0-beta.3':
+    dependencies:
+      marked: 18.2.1
+      semver: 7.8.6
+
   '@rolldown/binding-android-arm-eabi@1.2.19':
     optional: true
 
@@ -2829,6 +2847,8 @@ snapshots:
       '@babel/parser': 7.29.15
       '@babel/types': 7.29.15
       source-map-js: 1.2.4
+
+  marked@18.2.1: {}
 
   mdn-data@2.27.1: {}
 

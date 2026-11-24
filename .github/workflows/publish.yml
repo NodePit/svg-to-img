@@ -64,10 +64,11 @@ jobs:
           echo "prerelease=$PRE" >> "$GITHUB_ENV"
           echo "Publishing $version under dist-tag '$TAG' (prerelease: $PRE)."
 
-      # Before the publish on purpose: a version without a changelog entry should stop the
-      # release while re-tagging is still possible
+      # Before the publish on purpose: a version without changelog entries stops the release
+      # while re-tagging is still possible. Nothing is on npm yet, so add the entries, commit,
+      # and move the tag: git tag -fa "v$version" -m "$version", then force-push that tag
       - name: Take the release notes from the changelog
-        run: node scripts/changelog-section.mjs "$version" > "$RUNNER_TEMP/release-notes.md"
+        run: pnpm exec changelog-keeper extract "$version" > "$RUNNER_TEMP/release-notes.md"
 
       # Already published is not a failure (a retried job), but anything other than a 404 is
       - name: Skip if this version is already on npm

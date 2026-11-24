@@ -47,7 +47,7 @@ export default defineConfig(
     }
   },
   {
-    files: ["*.mjs", "*.mts", "scripts/*.mjs"],
+    files: ["*.mjs", "*.mts"],
     rules: { "n/no-unpublished-import": "off" }
   },
   prettier

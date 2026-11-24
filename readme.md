@@ -183,6 +183,23 @@ Errors of the browser itself (e.g. the browser crashes during the conversion) ar
 - [TypeScript](https://www.typescriptlang.org/) - Typed superset of JavaScript that compiles to plain JavaScript.
 - [Vitest](https://vitest.dev/) - Next generation testing framework.
 
+## Development
+
+The toolchain is pinned: pnpm by `packageManager`, Node by `.node-version`.
+
+```bash
+pnpm install
+pnpm run lint     # ESLint, Prettier, the type check, and Knip
+pnpm test         # needs Chrome, which the install of `puppeteer` downloads
+pnpm run build
+```
+
+### Releasing
+
+1. In `changelog.md`, move the entries under `## [Unreleased]` to a new `## [X.Y.Z] - YYYY-MM-DD` section below it (a plain hyphen; the empty `## [Unreleased]` heading stays), add an `[X.Y.Z]` link comparing the previous version with `vX.Y.Z`, point the `[unreleased]` link at `vX.Y.Z...HEAD`, and commit
+2. `pnpm version <patch|minor|major>` makes the release commit and tag, and pushes both. It stops first when the changelog is not ready: [changelog-keeper](https://github.com/qqilihq/changelog-keeper) checks it after the version bump (the only point at which the new version is known), says which lines to write, and undoes the bump. It never modifies the changelog
+3. The tag starts the publish workflow, which publishes to npm and creates the GitHub release
+
 ## Contributing
 
 When contributing to this project, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.

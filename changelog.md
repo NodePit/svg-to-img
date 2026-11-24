@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The text of an SVG can no longer run as JavaScript in the browser which renders it
 
-## [4.0.0] – 2026-10-14
+## [4.0.0] - 2026-10-14
 
 ### Changed
 
@@ -38,13 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Resolve the known vulnerabilities in `ws`, `tar-fs`, and `extract-zip`, which were pulled in by the previous Puppeteer version
 
-## [3.1.0] – 2022-07-30
+## [3.1.0] - 2022-07-30
 
-### Changes
+### Changed
 
 - Return types depending on whether a `Buffer` (no `encoding` specified) or `string` (`encoding` specified) is returned
 
-## [3.0.0] – 2022-04-30
+## [3.0.0] - 2022-04-30
 
 ### Changed
 
@@ -57,20 +57,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Require at least Node version 10.18.1
 
-## [2.2.0] – 2020-12-14
+## [2.2.0] - 2020-12-14
 
 ### Added
 
 - Export TS interfaces `IOptions`, `IShorthandOptions`, and `IConnectOptions`
 
-## [2.1.1] – 2020-04-15
+## [2.1.1] - 2020-04-15
 
 ### Fixed
 
 - Update README.md to reflect fork
 
-## [2.1.0] – 2020-04-15
+## [2.1.0] - 2020-04-15
 
 ### Added
 
 - Forked from Etienne Martin’s <a href="https://github.com/etienne-martin/svg-to-img">svg-to-img</a> and added possibility to connect to a Puppeteer endpoint (see <a href="https://github.com/etienne-martin/svg-to-img/pull/19">here</a>)
+
+[unreleased]: https://github.com/NodePit/svg-to-img/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/NodePit/svg-to-img/compare/v3.1.0...v4.0.0
+[3.1.0]: https://github.com/NodePit/svg-to-img/compare/v3.0.0...v3.1.0
+[3.0.0]: https://github.com/NodePit/svg-to-img/compare/v2.2.0...v3.0.0
+[2.2.0]: https://github.com/NodePit/svg-to-img/compare/v2.1.1...v2.2.0
+[2.1.1]: https://github.com/NodePit/svg-to-img/compare/v2.1.0...v2.1.1
+[2.1.0]: https://github.com/NodePit/svg-to-img/compare/v2.0.9...v2.1.0

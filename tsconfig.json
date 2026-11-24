@@ -10,8 +10,8 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "allowJs": true /* `eslint.config.mjs` and `scripts` are in `include`. */,
-    "checkJs": true /* otherwise the above only parses them. */,
+    "allowJs": true /* `eslint.config.mjs` is in `include`. */,
+    "checkJs": true /* otherwise the above only parses it. */,
     "declaration": true,
     "noEmit": true,
     "outDir": "./dist",
@@ -19,5 +19,5 @@
     "lib": ["dom", "es2023"],
     "types": ["node"]
   },
-  "include": ["src", "scripts", "eslint.config.mjs", "vitest.config.mts"]
+  "include": ["src", "eslint.config.mjs", "vitest.config.mts"]
 }
