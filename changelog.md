@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-11-24
+
 ### Added
 
 - Export the TS interface `IBoundingBox`, the type of the `clip` option
@@ -86,7 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Forked from Etienne Martin’s <a href="https://github.com/etienne-martin/svg-to-img">svg-to-img</a> and added possibility to connect to a Puppeteer endpoint (see <a href="https://github.com/etienne-martin/svg-to-img/pull/19">here</a>)
 
-[unreleased]: https://github.com/NodePit/svg-to-img/compare/v4.0.0...HEAD
+[unreleased]: https://github.com/NodePit/svg-to-img/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/NodePit/svg-to-img/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/NodePit/svg-to-img/compare/v3.1.0...v4.0.0
 [3.1.0]: https://github.com/NodePit/svg-to-img/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/NodePit/svg-to-img/compare/v2.2.0...v3.0.0
