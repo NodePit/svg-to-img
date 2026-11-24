@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Export the TS interface `IBoundingBox`, the type of the `clip` option
+- Option `timeout`, the maximum time in milliseconds to render the SVG; defaults to 30 seconds
 
 ### Fixed
 
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - The text of an SVG can no longer run as JavaScript in the browser which renders it
+- An SVG which kept the page busy (e.g. `<use>` elements nested to a billion copies) made that conversion and every later one wait forever. Each conversion now renders on a page of its own, and fails after `timeout`
 
 ## [4.0.0] - 2026-10-14
 

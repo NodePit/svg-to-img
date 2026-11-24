@@ -14,6 +14,7 @@ export interface IOptions {
   clip?: IBoundingBox;
   background?: string;
   encoding?: "base64" | "utf8" | "binary" | "hex";
+  timeout?: number;
 }
 
 export interface IShorthandOptions extends IOptions {

@@ -410,6 +410,67 @@ describe("SVG to image conversion", () => {
     }
   });
 
+  // ten copies of the level below on each of nine levels: a billion rectangles keep the page busy for good
+  const neverEndingSvg =
+    "<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><defs>" +
+    "<g id='l0'><rect width='1' height='1'/></g>" +
+    "<g id='l1'><use href='#l0'/><use href='#l0'/><use href='#l0'/><use href='#l0'/><use href='#l0'/><use href='#l0'/><use href='#l0'/><use href='#l0'/><use href='#l0'/><use href='#l0'/></g>" +
+    "<g id='l2'><use href='#l1'/><use href='#l1'/><use href='#l1'/><use href='#l1'/><use href='#l1'/><use href='#l1'/><use href='#l1'/><use href='#l1'/><use href='#l1'/><use href='#l1'/></g>" +
+    "<g id='l3'><use href='#l2'/><use href='#l2'/><use href='#l2'/><use href='#l2'/><use href='#l2'/><use href='#l2'/><use href='#l2'/><use href='#l2'/><use href='#l2'/><use href='#l2'/></g>" +
+    "<g id='l4'><use href='#l3'/><use href='#l3'/><use href='#l3'/><use href='#l3'/><use href='#l3'/><use href='#l3'/><use href='#l3'/><use href='#l3'/><use href='#l3'/><use href='#l3'/></g>" +
+    "<g id='l5'><use href='#l4'/><use href='#l4'/><use href='#l4'/><use href='#l4'/><use href='#l4'/><use href='#l4'/><use href='#l4'/><use href='#l4'/><use href='#l4'/><use href='#l4'/></g>" +
+    "<g id='l6'><use href='#l5'/><use href='#l5'/><use href='#l5'/><use href='#l5'/><use href='#l5'/><use href='#l5'/><use href='#l5'/><use href='#l5'/><use href='#l5'/><use href='#l5'/></g>" +
+    "<g id='l7'><use href='#l6'/><use href='#l6'/><use href='#l6'/><use href='#l6'/><use href='#l6'/><use href='#l6'/><use href='#l6'/><use href='#l6'/><use href='#l6'/><use href='#l6'/></g>" +
+    "<g id='l8'><use href='#l7'/><use href='#l7'/><use href='#l7'/><use href='#l7'/><use href='#l7'/><use href='#l7'/><use href='#l7'/><use href='#l7'/><use href='#l7'/><use href='#l7'/></g>" +
+    "<g id='l9'><use href='#l8'/><use href='#l8'/><use href='#l8'/><use href='#l8'/><use href='#l8'/><use href='#l8'/><use href='#l8'/><use href='#l8'/><use href='#l8'/><use href='#l8'/></g>" +
+    "</defs><use href='#l9'/></svg>";
+
+  test("Conversion which takes longer than the timeout fails, and the next one works", async () => {
+    const browsers: Browser[] = [];
+    const browserSource = new svgToImg.BrowserSource(async () => {
+      const browser = await puppeteer.launch(config.puppeteer);
+      browsers.push(browser);
+      return browser;
+    });
+    const convert = new svgToImg.SvgToImg(browserSource);
+
+    await expect(convert.from(neverEndingSvg).toPng({ timeout: 1000 })).rejects.toThrow("Rendering the SVG took longer than 1000 ms");
+    // the page which was still rendering is closed, only the browser's own first page is left
+    expect(await browsers[0]!.pages()).toHaveLength(1);
+    const data = await convert.from("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'/>").toPng();
+
+    expect(sizeOf(data)).toEqual({ type: "png", width: 10, height: 10 });
+  });
+
+  test("Conversion with an infinite timeout works", async () => {
+    // `setTimeout` takes a delay above 2³¹−1 ms as 1 ms, so this failed at once
+    const data = await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'/>").toPng({ timeout: Infinity });
+
+    expect(sizeOf(data)).toEqual({ type: "png", width: 10, height: 10 });
+  });
+
+  test("Conversion whose browser crashes fails with the browser's error, and the next one works", async () => {
+    const browsers: Browser[] = [];
+    const browserSource = new svgToImg.BrowserSource(async () => {
+      const browser = await puppeteer.launch(config.puppeteer);
+      browsers.push(browser);
+      return browser;
+    });
+    const convert = new svgToImg.SvgToImg(browserSource);
+
+    const conversion = convert.from(neverEndingSvg).toPng();
+    // the browser launches in a time of its own: wait for the conversion's page, then for the rendering to start
+    await expect.poll(async () => (await browsers[0]?.pages())?.length, { timeout: 10_000 }).toBe(2);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    browsers[0]!.process()!.kill("SIGKILL");
+
+    // not the error of closing the page, which fails too
+    await expect(conversion).rejects.toThrow("Protocol error (Runtime.evaluate): Target closed");
+    const data = await convert.from("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'/>").toPng();
+
+    expect(sizeOf(data)).toEqual({ type: "png", width: 10, height: 10 });
+  });
+
   test("Special character encoding", async () => {
     await expect(
       svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'><text x='0' y='0'>äöüÄÖÜçéèñ</text></svg>").toPng()

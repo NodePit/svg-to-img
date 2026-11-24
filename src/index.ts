@@ -172,23 +172,31 @@ export class Svg {
     let base64: string;
     try {
       const browser = await browserSource.getBrowser();
-      // A browser reached with `connect` can have no page open
-      const page = (await browser.pages())[0] ?? (await browser.newPage());
+      // A page of its own, so that an SVG which keeps the page busy holds up no other conversion, and a page of another
+      // client of a browser reached with `connect` is never used
+      const page = await browser.newPage();
+      try {
+        // ⚠️ Offline mode is enabled to prevent any HTTP requests over the network
+        await page.setOfflineMode(true);
 
-      // ⚠️ Offline mode is enabled to prevent any HTTP requests over the network
-      await page.setOfflineMode(true);
-
-      base64 = (await page.evaluate(
-        stringifyFunction(renderSvg, svg, {
-          width: options.width,
-          height: options.height,
-          type: options.type,
-          quality: options.quality,
-          background: options.background,
-          clip: options.clip,
-          jpegBackground: config.jpegBackground
-        })
-      )) as string;
+        base64 = await withTimeout(
+          page.evaluate(
+            stringifyFunction(renderSvg, svg, {
+              width: options.width,
+              height: options.height,
+              type: options.type,
+              quality: options.quality,
+              background: options.background,
+              clip: options.clip,
+              jpegBackground: config.jpegBackground
+            })
+          ) as Promise<string>,
+          options.timeout ?? config.timeout
+        );
+      } finally {
+        // fails when the browser is gone, which the conversion's own error already tells
+        await page.close().catch(() => undefined);
+      }
     } finally {
       // also after a failed conversion: an open browser keeps the process from exiting
       browserSource.scheduleBrowserForDestruction();
@@ -209,6 +217,22 @@ export class Svg {
     }
 
     return buffer.toString(options.encoding);
+  }
+}
+
+// An SVG can keep the page busy for good (e.g. `<use>` elements nested to a billion copies): the conversion fails
+// instead of waiting forever, and closing the page ends the rendering
+async function withTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const timedOut = new Promise<never>((_resolve, reject) => {
+    // `setTimeout` takes a longer delay (e.g. `Infinity`) as 1 ms; Puppeteer's `protocolTimeout` ends the call earlier
+    // anyway
+    timer = setTimeout(() => reject(new Error(`Rendering the SVG took longer than ${timeout} ms`)), Math.min(timeout, 2 ** 31 - 1));
+  });
+  try {
+    return await Promise.race([promise, timedOut]);
+  } finally {
+    clearTimeout(timer);
   }
 }
 

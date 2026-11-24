@@ -3,6 +3,8 @@ import { IOptions } from "./typings";
 export const config = {
   supportedImageTypes: ["jpeg", "png", "webp"],
   jpegBackground: "#fff",
+  // milliseconds a conversion may take to render, unless the `timeout` option says otherwise
+  timeout: 30_000,
   puppeteer: {
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   }
