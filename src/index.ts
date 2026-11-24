@@ -7,6 +7,11 @@ import { getFileTypeFromPath, renderSvg, stringifyFunction } from "./helpers";
 import { config, defaultOptions, defaultPngShorthandOptions, defaultJpegShorthandOptions, defaultWebpShorthandOptions } from "./constants";
 import { IBoundingBox, IOptions, IShorthandOptions, IConnectOptions } from "./typings";
 
+/**
+ * Opens the browser for conversions, and lets go of it when idle.
+ *
+ * @internal exported for the tests only; not part of the public API, it can change in any release
+ */
 export class BrowserSource {
   private queue: Array<(result: puppeteer.Browser) => void> = [];
   private browserDestructionTimeout: NodeJS.Timeout | undefined;
@@ -15,11 +20,18 @@ export class BrowserSource {
   // conversions which called `getBrowser` and not yet `scheduleBrowserForDestruction`; the idle close waits for all
   private conversions = 0;
 
-  constructor(private readonly factory: () => Promise<puppeteer.Browser>) {}
+  /**
+   * @param factory opens a browser when a conversion needs one
+   * @param release lets go of the browser once it was idle for 500 ms; closes it by default. A rejection is ignored
+   */
+  constructor(
+    private readonly factory: () => Promise<puppeteer.Browser>,
+    private readonly release: (browser: puppeteer.Browser) => Promise<void> = (browser) => browser.close()
+  ) {}
 
   /**
    * Returns the browser, and opens it if none is open. Call `scheduleBrowserForDestruction` once for every call of
-   * `getBrowser`, also when using the browser failed: the browser is closed only 500 ms after the last of these calls.
+   * `getBrowser`, also when using the browser failed: the browser is released only 500 ms after the last of these calls.
    */
   public async getBrowser(): Promise<puppeteer.Browser> {
     this.conversions++;
@@ -76,8 +88,8 @@ export class BrowserSource {
   }
 
   /**
-   * Lets go of a browser returned by `getBrowser`. When no other caller still uses it, the browser is closed after 500 ms,
-   * unless `getBrowser` is called again before.
+   * Lets go of a browser returned by `getBrowser`. When no other caller still uses it, the browser is passed to
+   * `release` after 500 ms, unless `getBrowser` is called again before.
    */
   public scheduleBrowserForDestruction() {
     this.conversions--;
@@ -90,7 +102,8 @@ export class BrowserSource {
       if (browser) {
         this.browserInstance = undefined;
         this.browserState = "closed";
-        void browser.close();
+        // nobody waits for the release, so a rejection would end the process as an unhandled one
+        this.release(browser).catch(() => {});
       }
     }, 500);
   }
@@ -238,11 +251,15 @@ export function from(svg: Buffer | string) {
 /* istanbul ignore next */
 export function connect(options: IConnectOptions) {
   return new SvgToImg(
-    new BrowserSource(async () => {
-      // puppeteer-core is ESM-only, load it when the first conversion needs it and not when this library is imported (CJS tooling like Jest cannot load it)
-      const { connect } = await import("puppeteer-core");
-      return connect(options);
-    })
+    new BrowserSource(
+      async () => {
+        // puppeteer-core is ESM-only, load it when the first conversion needs it and not when this library is imported (CJS tooling like Jest cannot load it)
+        const { connect } = await import("puppeteer-core");
+        return connect(options);
+      },
+      // the browser belongs to whoever runs the endpoint, and may serve other clients: `close` would end it for all of them
+      (browser) => browser.disconnect()
+    )
   );
 }
 

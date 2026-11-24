@@ -386,6 +386,56 @@ describe("SVG to image conversion", () => {
     await expect.poll(() => browsers[0]!.connected, { timeout: 2000 }).toBe(false);
   });
 
+  test("Idle browser is passed to release", async () => {
+    const released: Browser[] = [];
+    const browserSource = new svgToImg.BrowserSource(
+      () => puppeteer.launch(config.puppeteer),
+      async (browser) => {
+        released.push(browser);
+        await browser.close();
+      }
+    );
+    const browser = await browserSource.getBrowser();
+
+    browserSource.scheduleBrowserForDestruction();
+
+    expect(released).toHaveLength(0);
+    await expect.poll(() => released.length, { timeout: 2000 }).toBe(1);
+    expect(released[0]).toBe(browser);
+  });
+
+  test("Release which rejects does not end the process", async () => {
+    const browserSource = new svgToImg.BrowserSource(
+      () => puppeteer.launch(config.puppeteer),
+      async (browser) => {
+        await browser.close();
+        throw new Error("Release failed");
+      }
+    );
+    const browser = await browserSource.getBrowser();
+
+    browserSource.scheduleBrowserForDestruction();
+
+    await expect.poll(() => browser.connected, { timeout: 2000 }).toBe(false);
+    // an unhandled rejection is reported once the microtasks after the release ran
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  });
+
+  test("Browser reached with connect stays open when idle", async () => {
+    const remote = await puppeteer.launch(config.puppeteer);
+    try {
+      const convert = svgToImg.connect({ browserWSEndpoint: remote.wsEndpoint() });
+      await convert.from("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'/>").toPng();
+      // the idle browser is let go of after 500 ms
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      expect(remote.connected).toBe(true);
+      expect(await remote.version()).toMatch(/Chrome/);
+    } finally {
+      await remote.close();
+    }
+  });
+
   test("Special character encoding", async () => {
     await expect(
       svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'><text x='0' y='0'>äöüÄÖÜçéèñ</text></svg>").toPng()
