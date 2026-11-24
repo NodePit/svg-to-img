@@ -12,11 +12,11 @@ const responsiveSvgBuffer = fs.readFileSync(`${inputDir}/logo.svg`);
 const svgString = svgBuffer.toString("utf8");
 
 // Exact bytes depend on the Chrome version and platform, so check pixels instead of hashes
-const pixel = (png: Buffer, x: number, y: number) => {
+function pixel(png: Buffer, x: number, y: number) {
   const { data, width } = PNG.sync.read(png);
   const i = (y * width + x) * 4;
   return [data[i], data[i + 1], data[i + 2], data[i + 3]];
-};
+}
 
 // Create output directory
 fs.rmSync(outputDir, { recursive: true, force: true });

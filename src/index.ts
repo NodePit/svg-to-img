@@ -172,12 +172,12 @@ export class Svg {
 // Puppeteer 25 rejects a failed connection with an `ErrorEvent` wrapping Node's `AggregateError` (one error per
 // resolved address), which has an empty message
 /* istanbul ignore next */
-const unwrapConnectionError = (error: unknown) => {
+function unwrapConnectionError(error: unknown) {
   const cause = (error as { error?: unknown } | undefined)?.error ?? error;
   const { message, errors, code } = cause as { message?: string; errors?: Error[]; code?: string };
   if (message || !Array.isArray(errors)) return cause;
   return Object.assign(new Error(errors.map((e) => e.message).join("; "), { cause }), { code });
-};
+}
 
 export class SvgToImg {
   constructor(private readonly browserSource: BrowserSource) {}
@@ -204,12 +204,12 @@ const defaultBrowserSource = new BrowserSource(async () => {
   return await puppeteerFull.launch(config.puppeteer);
 });
 
-export const from = (svg: Buffer | string) => {
+export function from(svg: Buffer | string) {
   return new SvgToImg(defaultBrowserSource).from(svg);
-};
+}
 
 /* istanbul ignore next */
-export const connect = (options: IConnectOptions) => {
+export function connect(options: IConnectOptions) {
   return new SvgToImg(
     new BrowserSource(async () => {
       // puppeteer-core is ESM-only, load it when the first conversion needs it and not when this library is imported (CJS tooling like Jest cannot load it)
@@ -217,6 +217,6 @@ export const connect = (options: IConnectOptions) => {
       return connect(options);
     })
   );
-};
+}
 
 export { IBoundingBox, IOptions, IShorthandOptions, IConnectOptions };

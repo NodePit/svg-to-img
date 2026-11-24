@@ -1,13 +1,13 @@
 import * as fs from "node:fs";
 import { IBoundingBox, IOptions } from "./typings";
 
-export const getFileTypeFromPath = (path: string) => {
+export function getFileTypeFromPath(path: string) {
   const normalized = path.toLowerCase().replace(/jpg/g, "jpeg");
   return normalized.slice(normalized.lastIndexOf(".") + 1);
-};
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export const stringifyFunction = (func: Function, ...argsArray: (string | object | number)[]) => {
+export function stringifyFunction(func: Function, ...argsArray: (string | object | number)[]) {
   // Remove istanbul coverage instruments
   const functionString = func.toString().replace(/cov_(.+?)\+\+[,;]?/g, "");
   const args: Array<string | number> = [];
@@ -25,11 +25,13 @@ export const stringifyFunction = (func: Function, ...argsArray: (string | object
   }
 
   return `(${functionString})(${args.join(",")})`;
-};
+}
 
-export const writeFileAsync = (path: string, data: Buffer) => fs.promises.writeFile(path, data);
+export function writeFileAsync(path: string, data: Buffer) {
+  return fs.promises.writeFile(path, data);
+}
 
-export const renderSvg = async (
+export async function renderSvg(
   svg: string,
   options: {
     width?: IOptions["width"];
@@ -40,7 +42,7 @@ export const renderSvg = async (
     clip?: IBoundingBox;
     jpegBackground: string;
   }
-) => {
+) {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -59,6 +61,7 @@ export const renderSvg = async (
       img.height = options.height;
     }
 
+    // arrow functions, so that the narrowing of `ctx` above carries over into them
     const onLoad = () => {
       let imageWidth = img.naturalWidth;
       let imageHeight = img.naturalHeight;
@@ -134,4 +137,4 @@ export const renderSvg = async (
     const base64Svg = btoa(unescape(encodeURIComponent(svg)));
     img.src = "data:image/svg+xml;base64," + base64Svg;
   });
-};
+}
