@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Converting with a browser that has no page open (possible with `connect`) no longer fails with `TypeError`: a page is opened
 - `require("@nodepit/svg-to-img/package.json")` (or `require.resolve` of it) works again; the `exports` map of 4.0.0 had closed it with `ERR_PACKAGE_PATH_NOT_EXPORTED`
 - After the browser disconnected (e.g. it crashed, or the endpoint given to `connect` restarted), every conversion failed with `Attempted to use detached Frame` until the process was restarted. The next conversion now opens a new browser
+- A conversion which took longer than 500 ms failed with `Target closed` when another one finished first: the idle browser is now closed only after the last running conversion
+- After a failed conversion (e.g. `Malformed SVG`), the browser stayed open, and a script which converted nothing else did not exit
 - The usage examples in the readme import `@nodepit/svg-to-img`, not the unscoped `svg-to-img` (the original library this one is forked from)
 
 ### Security

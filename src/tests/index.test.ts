@@ -358,6 +358,34 @@ describe("SVG to image conversion", () => {
     expect(launches).toBe(2);
   });
 
+  test("Browser is not closed while another conversion still uses it", async () => {
+    const browserSource = new svgToImg.BrowserSource(() => puppeteer.launch(config.puppeteer));
+    // stands in for a conversion which is still running
+    const browser = await browserSource.getBrowser();
+
+    await new svgToImg.SvgToImg(browserSource).from("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'/>").toPng();
+    // well over the 500 ms after which an idle browser is closed
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    expect(browser.connected).toBe(true);
+    browserSource.scheduleBrowserForDestruction();
+    await expect.poll(() => browser.connected, { timeout: 2000 }).toBe(false);
+  });
+
+  test("Browser is closed after a failed conversion", async () => {
+    const browsers: Browser[] = [];
+    const browserSource = new svgToImg.BrowserSource(async () => {
+      const browser = await puppeteer.launch(config.puppeteer);
+      browsers.push(browser);
+      return browser;
+    });
+
+    await expect(new svgToImg.SvgToImg(browserSource).from("<svg").toPng()).rejects.toThrow("Malformed SVG");
+
+    expect(browsers[0]!.connected).toBe(true);
+    await expect.poll(() => browsers[0]!.connected, { timeout: 2000 }).toBe(false);
+  });
+
   test("Special character encoding", async () => {
     await expect(
       svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'><text x='0' y='0'>äöüÄÖÜçéèñ</text></svg>").toPng()
