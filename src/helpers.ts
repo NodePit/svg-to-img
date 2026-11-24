@@ -42,7 +42,7 @@ export async function renderSvg(
     const ctx = canvas.getContext("2d");
     const img = new Image();
 
-    /* istanbul ignore if */
+    /* v8 ignore if */
     if (!ctx) {
       return reject(new Error("Canvas not supported"));
     }
