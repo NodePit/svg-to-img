@@ -4,7 +4,7 @@
 
 import "vitest-canvas-mock";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { getFileTypeFromPath, stringifyFunction, renderSvg, writeFileAsync } from "../helpers";
+import { getFileTypeFromPath, stringifyFunction, renderSvg } from "../helpers";
 import { config } from "../constants";
 
 beforeEach(() => {
@@ -91,17 +91,5 @@ describe("Helper functions", () => {
         jpegBackground: config.jpegBackground
       })
     ).rejects.toThrow("Malformed SVG");
-  });
-
-  test("Write file asynchronously", async () => {
-    let errorThrown = false;
-
-    try {
-      await writeFileAsync("...//NOT-A-VALID-PATH//...", Buffer.from("dummy-data", "utf8"));
-    } catch {
-      errorThrown = true;
-    }
-
-    expect(errorThrown).toEqual(true);
   });
 });

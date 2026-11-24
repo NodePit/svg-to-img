@@ -2,7 +2,8 @@
 // puppeteer-core is ESM-only: the resolution mode lets the CJS declarations import it under node16 resolution
 import type * as puppeteer from "puppeteer-core" with { "resolution-mode": "import" };
 import type * as PuppeteerFull from "puppeteer" with { "resolution-mode": "import" };
-import { getFileTypeFromPath, renderSvg, stringifyFunction, writeFileAsync } from "./helpers";
+import { writeFile } from "node:fs/promises";
+import { getFileTypeFromPath, renderSvg, stringifyFunction } from "./helpers";
 import { config, defaultOptions, defaultPngShorthandOptions, defaultJpegShorthandOptions, defaultWebpShorthandOptions } from "./constants";
 import { IBoundingBox, IOptions, IShorthandOptions, IConnectOptions } from "./typings";
 
@@ -154,7 +155,7 @@ export class Svg {
     const buffer = Buffer.from(base64, "base64");
 
     if (options.path) {
-      await writeFileAsync(options.path, buffer);
+      await writeFile(options.path, buffer);
     }
 
     if (options.encoding === "base64") {

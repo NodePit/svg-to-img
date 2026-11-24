@@ -1,4 +1,3 @@
-import * as fs from "node:fs";
 import { IBoundingBox, IOptions } from "./typings";
 
 export function getFileTypeFromPath(path: string) {
@@ -24,10 +23,6 @@ export function stringifyFunction(func: Function, ...argsArray: (string | object
   }
 
   return `(${functionString})(${args.join(",")})`;
-}
-
-export function writeFileAsync(path: string, data: Buffer) {
-  return fs.promises.writeFile(path, data);
 }
 
 export async function renderSvg(

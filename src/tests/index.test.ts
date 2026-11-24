@@ -66,6 +66,14 @@ describe("SVG to image conversion", () => {
     });
   });
 
+  test("Path which cannot be written", async () => {
+    await expect(
+      svgToImg.from(svgBuffer).to({
+        path: `${outputDir}/missing-directory/image.png`
+      })
+    ).rejects.toThrow("ENOENT");
+  });
+
   test("Unknown file extension", async () => {
     await svgToImg.from(svgBuffer).to({
       path: `${outputDir}/image.ext`
