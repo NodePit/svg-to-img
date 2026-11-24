@@ -8,8 +8,7 @@ export function getFileTypeFromPath(path: string) {
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export function stringifyFunction(func: Function, ...argsArray: (string | object | number)[]) {
-  // Remove istanbul coverage instruments
-  const functionString = func.toString().replace(/cov_(.+?)\+\+[,;]?/g, "");
+  const functionString = func.toString();
   const args: Array<string | number> = [];
 
   for (const argument of argsArray) {
