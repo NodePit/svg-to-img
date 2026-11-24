@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A conversion which took longer than 500 ms failed with `Target closed` when another one finished first: the idle browser is now closed only after the last running conversion
 - After a failed conversion (e.g. `Malformed SVG`), the browser stayed open, and a script which converted nothing else did not exit
 - With `connect`, the idle browser is disconnected from, not closed: closing ended the browser at the endpoint, also for its other clients
+- When the browser could not be launched or connected to, only the first of several simultaneous conversions failed. The others waited until a later conversion opened a browser, or forever if none did. They now fail with the same error
 - The usage examples in the readme import `@nodepit/svg-to-img`, not the unscoped `svg-to-img` (the original library this one is forked from)
 
 ### Security
