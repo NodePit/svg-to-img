@@ -1,13 +1,15 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
+import "vitest-canvas-mock";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { getFileTypeFromPath, stringifyFunction, renderSvg, writeFileAsync } from "../helpers";
 import { config } from "../constants";
 
 beforeEach(() => {
   // Mock img.addEventListener("load|error", () => {});
-  Element.prototype.addEventListener = jest.fn((event, callback: EventListener) => {
+  Element.prototype.addEventListener = vi.fn((event, callback: EventListener) => {
     if (event === "load") {
       setTimeout(callback, 10);
     }
@@ -44,7 +46,7 @@ describe("Helper functions", () => {
       jpegBackground: config.jpegBackground
     });
 
-    // https://github.com/hustcc/jest-canvas-mock/blob/315d56b2dacf292f27fe84b690620957ddeadbdd/src/mock/prototype.js#L103
+    // `toDataURL` of vitest-canvas-mock (taken from jest-canvas-mock) always returns this
     expect(base64).toBe("00");
   });
 
@@ -75,7 +77,7 @@ describe("Helper functions", () => {
   });
 
   test("Malformed SVG", async () => {
-    Element.prototype.addEventListener = jest.fn((event, callback: EventListener) => {
+    Element.prototype.addEventListener = vi.fn((event, callback: EventListener) => {
       if (event === "error") {
         setTimeout(callback, 10);
       }

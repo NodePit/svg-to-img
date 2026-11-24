@@ -31,7 +31,7 @@ jobs:
       # builds (and lints) in `prebuild`, tests lint again in `pretest`
       - run: pnpm run build
 
-      - run: pnpm run test --forceExit
+      - run: pnpm run test
 
       - uses: codecov/codecov-action@v7
         if: matrix.node-version == '24.19.0'

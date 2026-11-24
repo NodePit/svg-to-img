@@ -1,4 +1,6 @@
-import * as fs from "fs";
+import * as fs from "node:fs";
+import puppeteer from "puppeteer";
+import { describe, expect, test } from "vitest";
 import * as svgToImg from "../index";
 import { PNG } from "pngjs";
 import { imageSize as sizeOf } from "image-size";
@@ -269,33 +271,19 @@ describe("SVG to image conversion", () => {
 
   test("Propagates error when cannot connect", async () => {
     const convert = svgToImg.connect({ browserWSEndpoint: "ws://localhost:12345" });
-    try {
-      await convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
-      fail();
-    } catch (error) {
-      expect((error as Error).message).toContain("ECONNREFUSED");
-    }
+    await expect(convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng()).rejects.toThrow("ECONNREFUSED");
   });
 
   test("Propagates error when cannot connect with subsequent attempts", async () => {
     const convert = svgToImg.connect({ browserWSEndpoint: "ws://localhost:12345" });
-    let errors = 0;
     for (let i = 0; i < 10; i++) {
-      try {
-        await convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng();
-        fail();
-      } catch (error) {
-        expect((error as Error).message).toContain("ECONNREFUSED");
-        errors++;
-      }
+      await expect(convert.from("<svg xmlns='http://www.w3.org/2000/svg'/>").toPng()).rejects.toThrow("ECONNREFUSED");
     }
-    expect(errors).toBe(10);
   });
 
   test("Browser without an open page", async () => {
     const browserSource = new svgToImg.BrowserSource(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const browser = await require("puppeteer").launch();
+      const browser = await puppeteer.launch();
       for (const page of await browser.pages()) {
         await page.close();
       }
@@ -309,11 +297,9 @@ describe("SVG to image conversion", () => {
   });
 
   test("Special character encoding", async () => {
-    try {
-      await svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'><text x='0' y='0'>äöüÄÖÜçéèñ</text></svg>").toPng();
-    } catch {
-      fail();
-    }
+    await expect(
+      svgToImg.from("<svg xmlns='http://www.w3.org/2000/svg'><text x='0' y='0'>äöüÄÖÜçéèñ</text></svg>").toPng()
+    ).resolves.toBeInstanceOf(Buffer);
   });
 
   test("SVG with text which looks like code", async () => {

@@ -175,7 +175,7 @@ Errors of the browser itself (e.g. the browser crashes during the conversion) ar
 * [node.js](https://nodejs.org/en/) - Cross-platform JavaScript run-time environment for executing JavaScript code server-side. 
 * [Puppeteer](https://github.com/GoogleChrome/puppeteer/) - Headless Chrome Node API.
 * [TypeScript](https://www.typescriptlang.org/) - Typed superset of JavaScript that compiles to plain JavaScript.
-* [Jest](https://facebook.github.io/jest/) - Delightful JavaScript Testing.
+* [Vitest](https://vitest.dev/) - Next generation testing framework.
 
 ## Contributing
 

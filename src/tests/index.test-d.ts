@@ -1,3 +1,4 @@
+import { describe, it } from "vitest";
 import { expectType } from "ts-expect";
 import * as svgToImg from "../index";
 import type { IBoundingBox } from "../index";
