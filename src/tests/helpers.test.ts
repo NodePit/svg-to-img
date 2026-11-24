@@ -28,7 +28,6 @@ describe("Helper functions", () => {
   });
 
   test("Stringify function with a string which looks like code", async () => {
-    // eslint-disable-next-line no-template-curly-in-string
     const text = "`a` ${notDefined} \"b\" 'c' \\n \u2028 äöü";
     const func = stringifyFunction((str: string) => str, text);
 

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 * An SVG with a backtick (`` ` ``) or `${…}` in it no longer fails with `SyntaxError` or `ReferenceError`: the SVG is passed to the browser as a JSON string instead of a template literal
+* A backslash in an SVG is kept as it is: it was read as the start of an escape sequence, so e.g. `\n` in a text was drawn as a line break, and a CSS escape such as `content: "\201C"` failed with `SyntaxError`
 
 ### Security
 * The text of an SVG can no longer run as JavaScript in the browser which renders it

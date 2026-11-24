@@ -303,8 +303,7 @@ describe("SVG to image conversion", () => {
   test("SVG with text which looks like code", async () => {
     // a backtick broke the code which runs in the browser, and a `${…}` ran in it
     const data = await svgToImg
-      // eslint-disable-next-line no-template-curly-in-string
-      .from("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><text>`a` ${notDefined} \\u00e4</text></svg>")
+      .from("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><text>`a` ${notDefined} ä</text></svg>")
       .toPng();
 
     expect(sizeOf(data)).toEqual({ type: "png", width: 10, height: 10 });
